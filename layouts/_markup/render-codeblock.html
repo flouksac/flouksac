@@ -1,0 +1,30 @@
+{{- /*
+  FLK code block render hook
+  - Keeps Hugo/Chroma syntax highlighting when the language is supported.
+  - Renders unsupported languages as plain text.
+  - Copy logic lives in assets/js/site.js so the hook stays CSP-friendly and maintainable.
+*/ -}}
+{{- $language := .Type | default "text" -}}
+{{- $title := or (index .Attributes "title") (index .Attributes "filename") -}}
+{{- $id := printf "flk-code-%s" (sha1 .Inner) -}}
+<figure class="flk-codeblock" data-codeblock="{{ $id }}">
+  <figcaption class="flk-codeblock__bar">
+    <span class="flk-codeblock__meta">
+      <span class="flk-codeblock__dot" aria-hidden="true"></span>
+      <span class="flk-codeblock__lang">{{ $language }}</span>
+      {{- with $title }}<span class="flk-codeblock__title">{{ . }}</span>{{- end }}
+    </span>
+    <button class="flk-codeblock__copy" type="button" aria-label="Copy code to clipboard">
+      <span class="flk-codeblock__copy-label">COPY</span>
+    </button>
+  </figcaption>
+  <div class="flk-codeblock__body">
+    {{- if transform.CanHighlight .Type -}}
+      {{- $result := transform.HighlightCodeBlock . -}}
+      {{- $result.Wrapped -}}
+    {{- else -}}
+      <pre tabindex="0"><code class="language-{{ $language }}">{{ .Inner | htmlEscape }}</code></pre>
+    {{- end -}}
+  </div>
+  <textarea class="flk-codeblock__source" aria-hidden="true" tabindex="-1">{{ .Inner | htmlEscape }}</textarea>
+</figure>

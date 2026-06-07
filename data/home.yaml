@@ -1,0 +1,39 @@
+hero:
+  eyebrow: "Junior Red Teamer - Independent SOC Architect"
+  title: "Welcome to my blog, you'll find some articles, my projects, R&D, and other cool stuff."
+  description: "I'm Flouksac, somewhere between red team, OSINT, AI security, open-source tooling, and security operations center. A jack of all trades, still learning and  building things, and occasionally fighting impostor syndrome."
+  primaryButton:
+    label: "Read the blog"
+    url: "/blog/"
+  secondaryButton:
+    label: "Contact"
+    url: "/about/#contact"
+  status:
+    - label: "github"
+      value: "github.com/flouksac"
+      url: "https://github.com/flouksac"
+    - label: "made in"
+      value: "France 🇫🇷"
+    - label: "interested in"
+      value: "red teaming · SOC · OSINT · AI · much more :D"
+    
+
+playlists:
+  kicker: "Some of my series of articles"
+  title: "Playlists"
+  seeAll:
+    label: "See everything"
+    url: "/blog/"
+  items:
+    - title: "write-ups"
+      index: "01"
+      text: "My notes, traces, mistakes, tooling choices and lessons learned."
+      url: "/playlists/writeups/"
+    - title: "Build my ultimate homelab"
+      index: "02"
+      text: "My infrastructure experimentations."
+      url: "/playlists/homelab/"
+    - title: "misc R&D"
+      index: "03"
+      text: "Research around various subjects"
+      url: "/playlists/r-and-d/"

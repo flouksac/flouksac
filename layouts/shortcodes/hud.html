@@ -1,0 +1,4 @@
+<div class="hud-panel">
+  {{ with .Get "title" }}<p class="overline">{{ . }}</p>{{ end }}
+  {{ .Inner | markdownify }}
+</div>

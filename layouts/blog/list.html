@@ -1,0 +1,32 @@
+{{ define "main" }}
+<section class="page-hero shell compact">
+  <p class="overline">blog</p>
+  <h1>{{ .Title }}</h1>
+  {{ with .Description }}<p>{{ . }}</p>{{ end }}
+</section>
+
+<section class="shell list-layout blog-layout">
+  <aside class="taxonomy-rail hud-panel">
+    <p class="overline">playlists</p>
+    <nav class="tag-cloud" aria-label="Playlists">
+      {{ range site.Taxonomies.playlists.Alphabetical }}
+        <a href="{{ .Page.RelPermalink }}">#{{ .Page.LinkTitle }} <span>{{ .Count }}</span></a>
+      {{ end }}
+    </nav>
+    <p class="overline rail-kicker">tags</p>
+    <nav class="tag-cloud" aria-label="Tags">
+      {{ range first 18 site.Taxonomies.tags.ByCount }}
+        <a href="{{ .Page.RelPermalink }}">#{{ .Page.LinkTitle }} <span>{{ .Count }}</span></a>
+      {{ end }}
+    </nav>
+  </aside>
+
+  <div class="article-list">
+    {{ range .Paginator.Pages }}
+      {{ partial "list-card.html" . }}
+    {{ end }}
+  </div>
+</section>
+
+{{ partial "pagination.html" . }}
+{{ end }}

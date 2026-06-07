@@ -1,0 +1,83 @@
+baseURL: "https://flouksac.github.io/"
+languageCode: "en-us"
+title: "flouksac's blog"
+timeZone: "Europe/Paris"
+defaultContentLanguage: "en"
+enableRobotsTXT: true
+enableGitInfo: true
+
+pagination:
+  pagerSize: 10
+
+permalinks:
+  blog: "/blog/:slug/"
+  projects: "/projects/:slug/"
+  slides: "/slides/:slug/"
+  certifications: "/certifications/:slug/"
+
+outputs:
+  home: ["HTML", "RSS", "JSON"]
+
+menus:
+  main:
+    - name: "Home"
+      pageRef: "/"
+      weight: 10
+    - name: "Blog"
+      pageRef: "/blog"
+      weight: 20
+    - name: "Projects"
+      pageRef: "/projects"
+      weight: 30
+    - name: "Slides"
+      pageRef: "/slides"
+      weight: 40
+    - name: "Certifications / Labs"
+      pageRef: "/certifications"
+      weight: 50
+    - name: "About"
+      pageRef: "/about"
+      weight: 60
+    - name: "Search"
+      pageRef: "/search"
+      weight: 70
+
+taxonomies:
+  tag: "tags"
+  playlist: "playlists"
+  series: "series"
+
+params:
+  author: "Flouksac"
+  handle: "flouksac"
+  description: "Cybersecurity articles, projects, R&D, labs, slides, and personal research notes."
+  repo: "https://github.com/flouksac/flouksac.github.io"
+  github: "https://github.com/flouksac"
+  linkedin: "https://www.linkedin.com/in/flouksac/" # TODO real link... 
+  email: "flouksac@proton.me"
+  gpgFingerprint: "58C3 468C 17BF 48E7 339D  A3F4 0BA5 8681 7AC8 68AD"
+  accentLabel: "netrunner"
+  dateFormat: "2026-01-02"
+  showReadingTime: true
+  # keywords:
+  #   - cybersecurity
+  #   - red team
+  #   - OSINT
+  #   - SOC
+  #   - AI security
+  #   - homelab
+  #   - open source
+
+markup:
+  highlight:
+    noClasses: false
+    codeFences: true
+    guessSyntax: true
+    lineNos: false
+  goldmark:
+    renderer:
+      unsafe: false
+
+caches:
+  images:
+    dir: ":cacheDir/images"

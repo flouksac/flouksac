@@ -1,0 +1,7 @@
+{{ if gt .Paginator.TotalPages 1 }}
+<nav class="pagination shell" aria-label="Pagination">
+  {{ if .Paginator.HasPrev }}<a class="btn btn-secondary" href="{{ .Paginator.Prev.URL }}">← Newer</a>{{ end }}
+  <span>Page {{ .Paginator.PageNumber }} / {{ .Paginator.TotalPages }}</span>
+  {{ if .Paginator.HasNext }}<a class="btn btn-secondary" href="{{ .Paginator.Next.URL }}">Older →</a>{{ end }}
+</nav>
+{{ end }}

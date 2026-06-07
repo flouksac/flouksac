@@ -1,0 +1,32 @@
+<header class="site-header" data-header>
+  <div class="header-inner shell">
+    <a class="brand" href="{{ site.Home.RelPermalink }}" aria-label="{{ site.Title }} home">
+      <span class="brand-holo" aria-hidden="true">
+        <span class="brand-holo__scan"></span>
+        <span class="brand-holo__glyph">FLK</span>
+        <span class="brand-holo__bars"></span>
+      </span>
+      <span class="brand-copy">
+        <strong>{{ site.Params.handle }}</strong>
+        <small>{{ site.Params.accentLabel }}</small>
+      </span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" data-nav-toggle>
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav" aria-label="Main navigation" data-nav>
+      {{ range site.Menus.main }}
+        {{ $active := or ($.IsMenuCurrent "main" .) ($.HasMenuCurrent "main" .) }}
+        <a class="nav-link{{ if $active }} is-active{{ end }}" href="{{ .URL }}" {{ if $active }}aria-current="page"{{ end }}>{{ .Name }}</a>
+      {{ end }}
+    </nav>
+
+    <button class="theme-toggle" type="button" aria-label="Toggle light and dark theme" data-theme-toggle>
+      <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+      <span class="theme-toggle__label">theme</span>
+    </button>
+  </div>
+  <div class="reading-progress" aria-hidden="true" data-reading-progress><span></span></div>
+</header>

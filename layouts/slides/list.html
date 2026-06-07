@@ -1,0 +1,13 @@
+{{ define "main" }}
+<section class="page-hero shell compact">
+  <p class="overline">slides</p>
+  <h1>{{ .Title }}</h1>
+  {{ with .Description }}<p>{{ . }}</p>{{ end }}
+</section>
+<section class="shell article-list page-list">
+  {{ range .Paginator.Pages }}
+    {{ partial "list-card.html" . }}
+  {{ end }}
+</section>
+{{ partial "pagination.html" . }}
+{{ end }}

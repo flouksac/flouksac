@@ -1,0 +1,13 @@
+<article class="content-card">
+  <a class="card-hit" href="{{ .RelPermalink }}" aria-label="Read {{ .Title }}"></a>
+  <div class="card-kicker">
+    <span>{{ .Section | default .Type }}</span>
+    {{ if eq .Section "blog" }}{{ with .Params.playlists }}<span>{{ index . 0 }}</span>{{ end }}{{ end }}
+  </div>
+  <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+  <p>{{ with .Params.deck }}{{ . }}{{ else }}{{ .Summary | plainify | truncate 150 }}{{ end }}</p>
+  <footer>
+    <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format (site.Params.dateFormat | default "2006-01-02") }}</time>
+    {{ if and (eq .Section "blog") site.Params.showReadingTime }}<span>{{ .ReadingTime }} min read</span>{{ end }}
+  </footer>
+</article>

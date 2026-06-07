@@ -1,0 +1,4 @@
+<div class="terminal-shortcode">
+  <div class="terminal-bar"><span>{{ with .Get "title" }}{{ . }}{{ else }}terminal{{ end }}</span><span>tty0</span></div>
+  <pre><code>{{ .Inner | htmlEscape }}</code></pre>
+</div>

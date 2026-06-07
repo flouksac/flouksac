@@ -1,0 +1,14 @@
+{{ define "main" }}
+<section class="page-hero shell compact">
+  <p class="overline">local index</p>
+  <h1>{{ .Title }}</h1>
+  <p>{{ .Description }}</p>
+</section>
+<section class="shell">
+  <div class="search-box">
+    <label class="overline" for="site-search">query</label>
+    <input id="site-search" class="search-input" type="search" placeholder="Try: osint, homelab, sigma, writeup…" data-search-input data-index-url='{{ "index.json" | relURL }}' autocomplete="off">
+  </div>
+  <div class="search-results post-grid" data-search-results aria-live="polite"></div>
+</section>
+{{ end }}

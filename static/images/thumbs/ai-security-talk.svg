@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 232 152" role="img" aria-label="ai-security">
+  <rect width="232" height="152" fill="#030304"/>
+  <path d="M8 8h176l40 40v96H8z" fill="#120711" stroke="#ff2f57" stroke-opacity=".55"/>
+  <path d="M16 18h130M16 134h198" stroke="#27f5ee" stroke-opacity=".4" stroke-dasharray="10 8"/>
+  <path d="M40 36h150v84H40z" stroke="#27f5ee" fill="none" stroke-width="3"/><path d="M70 62h92M70 82h62M70 102h104" stroke="#ff2f57" stroke-width="4"/><circle cx="176" cy="50" r="14" fill="#ffe900"/><path d="M28 124l34-34M202 28l-38 38" stroke="#27f5ee" stroke-width="2"/>
+  <text x="16" y="144" fill="#8ff" font-family="monospace" font-size="9">ai-security // 0x464c4b</text>
+</svg>

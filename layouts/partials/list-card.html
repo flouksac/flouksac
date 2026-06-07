@@ -1,0 +1,28 @@
+<article class="content-list-card">
+  <a class="card-hit" href="{{ .RelPermalink }}" aria-label="Open {{ .Title }}"></a>
+  <div class="holo-thumb" aria-hidden="true">
+    {{ with .Params.image }}<img src="{{ . | relURL }}" alt="" loading="lazy" decoding="async"><span class="thumb-mask"></span>{{ end }}
+    <span>{{ if eq .Section "blog" }}{{ with .Params.playlists }}{{ index . 0 }}{{ else }}note{{ end }}{{ else }}{{ .Section }}{{ end }}</span>
+  </div>
+  <div class="list-card-body">
+    <div class="card-kicker">
+      <span>{{ if eq .Section "slides" }}conference{{ else }}{{ .Section | default .Type }}{{ end }}</span>
+      {{ if eq .Section "blog" }}{{ with .Params.playlists }}<span>{{ delimit . " · " }}</span>{{ end }}{{ end }}
+      {{ with .Params.event }}<span>{{ . }}</span>{{ end }}
+      {{ with .Params.credential_type }}<span>{{ . }}</span>{{ end }}
+    </div>
+    <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+    <p>{{ with .Params.deck }}{{ . }}{{ else }}{{ .Summary | plainify | truncate 180 }}{{ end }}</p>
+    {{ with .Params.tags }}
+    <div class="mini-tags">
+      {{ range first 5 . }}<span>#{{ . }}</span>{{ end }}
+    </div>
+    {{ end }}
+    <footer>
+      <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format (site.Params.dateFormat | default "2006-01-02") }}</time>
+      {{ if and (eq .Section "blog") site.Params.showReadingTime }}<span>{{ .ReadingTime }} min read</span>{{ end }}
+      {{ with .Params.project_url }}<span>repo ↗</span>{{ end }}
+      {{ with .Params.pdf }}<span>slides pdf</span>{{ end }}
+    </footer>
+  </div>
+</article>

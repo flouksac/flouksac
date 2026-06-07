@@ -1,0 +1,79 @@
+{{ define "main" }}
+{{ $home := site.Data.home }}
+<section class="hero shell" aria-labelledby="home-title">
+  <div class="hero-copy">
+    <p class="overline glitch-line">{{ $home.hero.eyebrow }}</p>
+    <h1 id="home-title">{{ $home.hero.title }}</h1>
+    <p class="hero-description">{{ $home.hero.description }}</p>
+
+    <dl class="status-grid" aria-label="Current status">
+      {{ range $home.hero.status }}
+      <div>
+        <dt>{{ .label }}</dt>
+        <dd>{{ if .url }}<a href="{{ .url }}" rel="me noopener">{{ .value }}</a>{{ else }}{{ .value }}{{ end }}</dd>
+      </div>
+      {{ end }}
+    </dl>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ $home.hero.primaryButton.url | relURL }}">{{ $home.hero.primaryButton.label }}</a>
+      <a class="btn btn-secondary" href="{{ $home.hero.secondaryButton.url | relURL }}">{{ $home.hero.secondaryButton.label }}</a>
+    </div>
+  </div>
+
+  <aside class="ascii-rig" aria-label="ASCII art terminal">
+    <div class="terminal-bar">
+      <span>flouksac@home:~$</span>
+      <span>netrunning...</span>
+    </div>
+    <div class="ascii-viewport">
+      <pre class="ascii-art ascii-art--samurai" aria-hidden="true">{{ with resources.Get "ascii/home.txt" }}{{ .Content }}{{ end }}</pre>
+      <pre class="ascii-art ascii-art--signature" aria-hidden="true">{{ with resources.Get "ascii/signature.txt" }}{{ .Content }}{{ end }}</pre>
+    </div>
+  </aside>
+</section>
+
+<section class="playlist-hub shell" aria-labelledby="playlist-title">
+  <div class="playlist-intro hud-panel">
+    <p class="overline">{{ $home.playlists.kicker }}</p>
+    <h2 id="playlist-title">{{ $home.playlists.title }}</h2>
+    <a class="arrow-link" href="{{ $home.playlists.seeAll.url | relURL }}">{{ $home.playlists.seeAll.label }} →</a>
+  </div>
+  <div class="playlist-list">
+    {{ range $home.playlists.items }}
+    <a class="playlist-card" href="{{ .url | relURL }}">
+      <span class="playlist-card__index">{{ .index }}</span>
+      <h3>{{ .title }}</h3>
+      <p>{{ .text }}</p>
+    </a>
+    {{ end }}
+  </div>
+</section>
+
+<section class="home-section shell home-feed" aria-labelledby="latest-title">
+  <div class="section-heading">
+    <div>
+      <p class="overline">unsorted field feed</p>
+      <h2 id="latest-title">Latest articles</h2>
+    </div>
+    <a href="{{ "/blog/" | relURL }}">View all articles →</a>
+  </div>
+
+  <div class="feed-layout">
+    <aside class="taxonomy-rail hud-panel">
+      <p class="overline">tags</p>
+      <nav class="tag-cloud" aria-label="Tags">
+        {{ range first 14 site.Taxonomies.tags.ByCount }}
+          <a href="{{ .Page.RelPermalink }}">#{{ .Page.LinkTitle }} <span>{{ .Count }}</span></a>
+        {{ end }}
+      </nav>
+    </aside>
+
+    <div class="article-list">
+      {{ range first 8 (where site.RegularPages "Section" "blog") }}
+        {{ partial "list-card.html" . }}
+      {{ end }}
+    </div>
+  </div>
+</section>
+{{ end }}

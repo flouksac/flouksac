@@ -1,0 +1,29 @@
+{{ define "main" }}
+<section class="page-hero shell compact">
+  <p class="overline">profile / living cv</p>
+  <h1>{{ .Title }}</h1>
+  {{ with .Description }}<p>{{ . }}</p>{{ end }}
+</section>
+
+<section class="shell about-layout">
+  <article class="about-content hud-panel article-body">
+    {{ .Content }}
+  </article>
+  <aside class="about-panel hud-panel" aria-label="Contact and profile summary">
+    <p class="overline">identity</p>
+    <dl>
+      <div><dt>handle</dt><dd>{{ site.Params.handle }}</dd></div>
+      <div><dt>base</dt><dd>France 🇫🇷</dd></div>
+      <div><dt>focus</dt><dd>red team · SOC · OSINT · AI security · homelab</dd></div>
+      <div><dt>email</dt><dd><a href="mailto:{{ site.Params.email }}">{{ site.Params.email }}</a></dd></div>
+    </dl>
+    <div class="mini-tags">
+      <span>#field-notes</span><span>#research</span><span>#tooling</span><span>#labs</span>
+    </div>
+    <div class="article-actions">
+      <a class="btn btn-primary" href="mailto:{{ site.Params.email }}">Email</a>
+      <a class="btn btn-secondary" href="{{ site.Params.github }}" rel="me noopener">GitHub</a>
+    </div>
+  </aside>
+</section>
+{{ end }}

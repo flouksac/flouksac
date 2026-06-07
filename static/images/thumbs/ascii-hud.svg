@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 232 152" role="img" aria-label="ascii-hud">
+  <rect width="232" height="152" fill="#030304"/>
+  <path d="M8 8h176l40 40v96H8z" fill="#120711" stroke="#ff2f57" stroke-opacity=".55"/>
+  <path d="M16 18h130M16 134h198" stroke="#27f5ee" stroke-opacity=".4" stroke-dasharray="10 8"/>
+  <path d="M22 26h190v100H22z" stroke="#27f5ee" fill="none"/><text x="34" y="58" fill="#ff2f57" font-family="monospace" font-size="14">01000110 FLK</text><text x="34" y="84" fill="#27f5ee" font-family="monospace" font-size="14">フロックサック</text><text x="34" y="110" fill="#ffe900" font-family="monospace" font-size="14">ZmxvdWtzYWM=</text>
+  <text x="16" y="144" fill="#8ff" font-family="monospace" font-size="9">ascii-hud // 0x464c4b</text>
+</svg>

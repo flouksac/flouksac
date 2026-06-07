@@ -1,0 +1,16 @@
+<footer class="site-footer">
+  <div class="shell footer-grid">
+    <div class="footer-callout hud-panel">
+      <p class="overline">disclaimer</p>
+      <h2>Personal notes, educational purpose.</h2>
+      <p>The content published here reflects my own views only. It does not represent any employer, client, school, or organization. Everything is shared for educational and research purposes. I am not responsible for how readers reuse, adapt, or apply it. Unless stated otherwise, the content is mine; if you quote, reuse, or build from it, please credit Flouksac and link back to the original page.</p>
+    </div>
+    <div class="footer-links" aria-label="Footer links">
+      <a href="{{ "/index.xml" | relURL }}">RSS</a>
+      <a href="{{ site.Params.github }}" rel="me noopener">GitHub</a>
+      <a href="{{ site.Params.linkedin }}" rel="me noopener">LinkedIn</a>
+      <a href="mailto:{{ site.Params.email }}">{{ site.Params.email }}</a>
+    </div>
+    <p class="footer-meta">© {{ now.Year }} {{ site.Params.author }} · Built with Hugo · Markdown-first · Static by design.</p>
+  </div>
+</footer>

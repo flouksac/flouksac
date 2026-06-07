@@ -1,0 +1,15 @@
+{{ define "main" }}
+<section class="page-hero shell compact">
+  <p class="overline">taxonomy</p>
+  <h1>{{ .Title }}</h1>
+  <p>Browse recurring topics, research tracks, and article playlists.</p>
+</section>
+<section class="shell term-grid">
+  {{ range .Data.Terms.Alphabetical }}
+    <a class="term-card" href="{{ .Page.RelPermalink }}">
+      <span>#{{ .Page.LinkTitle }}</span>
+      <strong>{{ .Count }}</strong>
+    </a>
+  {{ end }}
+</section>
+{{ end }}

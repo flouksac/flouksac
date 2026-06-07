@@ -1,0 +1,43 @@
+{{- $email := .Get "email" | default "" -}}
+{{- $key := .Get "key" | default "" -}}
+{{- $fingerprint := .Get "fingerprint" | default "" -}}
+{{- $label := .Get "label" | default "Download public key" -}}
+{{- $inner := .Inner -}}
+
+<section class="gpg-block" aria-label="OpenPGP public key">
+  <div >
+    {{- with $email -}}
+
+      <div>
+        <span >Email</span>
+        <br>
+        <a class="gpg-block__value" href="mailto:{{ . }}">{{ . }}</a>
+      </div>
+    {{- end -}}
+
+    {{- with $fingerprint -}}
+            <br>
+
+      <div>
+        <span class="gpg-block__label">Fingerprint</span>
+                <br>
+
+        <code class="gpg-block__fingerprint">{{ . }}</code>
+      </div>
+    {{- end -}}
+
+
+    {{- with $key -}}
+            <br>
+
+      <div>
+        <a class="hud-button hud-button--primary" href="{{ . | relURL }}" download>{{ $label }}</a>
+      </div>
+    {{- end -}}
+  </div>
+
+  {{- if ne $inner "" -}}
+    <pre><code>{{ $inner }}</code></pre>
+  {{- end -}}
+
+</section>

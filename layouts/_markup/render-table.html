@@ -1,0 +1,32 @@
+{{- /*
+  FLK table render hook
+  Wraps native Markdown tables in a HUD shell at build time.
+  The JS enhancer remains as a fallback for any table emitted outside Hugo's table hook.
+*/ -}}
+<div class="flk-table-shell" role="region" aria-label="Scrollable markdown table" tabindex="0" data-table="flk-table">
+  <table
+    {{- range $k, $v := .Attributes }}
+      {{- if $v }}
+        {{- printf " %s=%q" $k $v | safeHTMLAttr }}
+      {{- end }}
+    {{- end }}>
+    <thead>
+      {{- range .THead }}
+        <tr>
+          {{- range . }}
+            <th{{ with .Alignment }}{{ printf " style=%q" (printf "text-align: %s" .) | safeHTMLAttr }}{{ end }}>{{ .Text }}</th>
+          {{- end }}
+        </tr>
+      {{- end }}
+    </thead>
+    <tbody>
+      {{- range .TBody }}
+        <tr>
+          {{- range . }}
+            <td{{ with .Alignment }}{{ printf " style=%q" (printf "text-align: %s" .) | safeHTMLAttr }}{{ end }}>{{ .Text }}</td>
+          {{- end }}
+        </tr>
+      {{- end }}
+    </tbody>
+  </table>
+</div>
