@@ -1,6 +1,6 @@
 hero:
   eyebrow: "Junior Red Teamer - Independent SOC Architect"
-  title: "Welcome to my blog, you'll find some articles, my projects, R&D, and other cool stuff."
+  title: "Welcome to my blog, you'll find some articles, my projects, R&D, and other cool stuff :p"
   description: "I'm Flouksac, somewhere between red team, OSINT, AI security, open-source tooling, and security operations center. A jack of all trades, still learning and  building things, and occasionally fighting impostor syndrome."
   primaryButton:
     label: "Read the blog"
@@ -15,7 +15,7 @@ hero:
     - label: "made in"
       value: "France 🇫🇷"
     - label: "interested in"
-      value: "red teaming · SOC · OSINT · AI · much more :D"
+      value: "red teaming / SOC / OSINT / AI / much more :D"
     
 
 playlists:

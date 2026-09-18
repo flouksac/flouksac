@@ -1,7 +1,7 @@
 ---
 title: "Lorem Ipsum Project: ASCII HUD Experiments"
 date: 2026-05-27
-draft: false
+draft: true
 deck: "A placeholder project page for terminal-first interface experiments, geometric overlays, ASCII blocks, and readable cyberpunk UI patterns."
 image: "/images/thumbs/ascii-hud.svg"
 tags: ["ui", "ascii", "cyberpunk"]

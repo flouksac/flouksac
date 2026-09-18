@@ -1,7 +1,7 @@
 ---
 title: "Lorem Ipsum Project: Detection Forge"
 date: 2026-06-01
-draft: false
+draft: true
 deck: "A placeholder project page for a future detection engineering helper built around small lab telemetry and reproducible tests."
 image: "/images/thumbs/detection-forge.svg"
 tags: ["open-source", "detection", "python"]

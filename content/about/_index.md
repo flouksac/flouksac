@@ -9,17 +9,18 @@ I'm currently a red team intern and also work as freelance as a SOC architect.
 
 ## Interests
 
-- Red-team & adversary emulation.
-- Security Operation Center.
+- Red-teaming and adversary emulation.
+- Open Source Security Operation Center.
 - OSINT & scraping.
-- AI security, especially prompt injection, agent abuse, data exposure, evaluation gaps, and model-facing attack surfaces.
-- Homelab, because building small systems is still one of the best ways to understand large ones :p .
+- AI security, from toolings enhanced with ai to ai pentesting 
+- Homelab and infrastructure, because building small systems is still one of the best ways to understand large ones :p .
+- a new interest in FPV is recently born 
 
 ## Contact {#contact}
 
 The best way to contact me is by email: [flouksac@proton.me](mailto:flouksac@proton.me).
 
-You can also find me on [GitHub](https://github.com/flouksac) and [LinkedIn](https://www.linkedin.com/in/flouksac/).
+You can also find me on [GitHub](https://github.com/flouksac).
 
 For sensitive topics, use GPG.
 

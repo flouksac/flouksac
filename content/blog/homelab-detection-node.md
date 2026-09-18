@@ -1,7 +1,7 @@
 ---
 title: "Lorem Ipsum Homelab: Detection Node Blueprint"
 date: 2026-05-29
-draft: false
+draft: true
 deck: "A placeholder build log for testing long technical writing around telemetry, parsing, enrichment, and SOC architecture."
 image: "/images/thumbs/homelab-node.svg"
 tags: ["homelab", "soc", "detection-engineering"]

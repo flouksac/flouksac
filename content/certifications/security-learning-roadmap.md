@@ -1,7 +1,7 @@
 ---
 title: "Security Learning Roadmap: Lorem Ipsum Track"
 date: 2026-05-01
-draft: false
+draft: true
 credential_type: "certification"
 status: "in progress"
 deck: "A placeholder certification roadmap for offensive security, SOC fundamentals, structured methodology, and practical learning milestones."

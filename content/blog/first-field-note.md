@@ -1,7 +1,7 @@
 ---
 title: "Lorem Ipsum Field Note: Netrunner Methodology Skeleton"
 date: 2026-06-07
-draft: false
+draft: true
 deck: "A deliberately over-formatted placeholder note used to test headings, callouts, code blocks, tables, tags, and reading rhythm."
 image: "/images/thumbs/netrunner-methodology.svg"
 tags: ["meta", "methodology", "notes"]

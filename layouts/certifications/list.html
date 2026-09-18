@@ -10,25 +10,25 @@
 <section class="shell cert-lab-layout">
   <div class="section-heading compact-heading">
     <div>
-      <p class="overline">verified learning</p>
+      <p class="overline">learning</p>
       <h2>Certifications</h2>
     </div>
   </div>
   <div class="credential-list">
     {{ range $certs }}{{ partial "credential-card.html" . }}{{ else }}
-      <p class="muted">Add certification pages with <code>credential_type: "certification"</code> in the front matter.</p>
+      <p class="muted">No articles yet</p>
     {{ end }}
   </div>
 
   <div class="section-heading compact-heading lower-heading">
     <div>
-      <p class="overline">practice ground</p>
+      <p class="overline">practice</p>
       <h2>Labs / Boxes</h2>
     </div>
   </div>
   <div class="credential-list">
     {{ range $labs }}{{ partial "credential-card.html" . }}{{ else }}
-      <p class="muted">Add lab pages with <code>credential_type: "lab"</code> in the front matter.</p>
+      <p class="muted">No articles yet</p>
     {{ end }}
   </div>
 </section>

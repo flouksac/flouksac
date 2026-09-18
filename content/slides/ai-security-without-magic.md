@@ -1,7 +1,7 @@
 ---
 title: "Lorem Ipsum Talk: AI Security Without Magic"
 date: 2026-05-12
-draft: false
+draft: true
 deck: "A placeholder conference page for testing slide metadata, abstract formatting, PDF links, and event-style list cards."
 image: "/images/thumbs/ai-security-talk.svg"
 event: "future conference / workshop"

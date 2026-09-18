@@ -1,7 +1,7 @@
 ---
 title: "Lab Boxes: Lorem Ipsum Practical Path"
 date: 2026-04-20
-draft: false
+draft: true
 credential_type: "lab"
 status: "active"
 deck: "A placeholder lab tracker for boxes, themes, badges, solved paths, and practical lessons learned through hands-on work."
