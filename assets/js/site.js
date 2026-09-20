@@ -51,7 +51,7 @@
   const canvas = document.getElementById('matrixCanvas');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (canvas && !reduceMotion) {
-    const ctx = canvas.getContext('2d', { alpha: true });
+    const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
     const alphabet = [
       ...'01abcdef0123456789{}[]<>/$#@+-=',
       ...'アイウエオカキクケコサシスセソタチツテトナニヌネノマミムメモヤユヨラリルレロワン',
@@ -75,6 +75,10 @@
     let frameId = 0;
     let resizeId = 0;
     let lastFrame = 0;
+    let scrolling = false;
+    let scrollIdleTimer = 0;
+    const idleFrameInterval = 1000 / 30;
+    const scrollingFrameInterval = 1000 / 20;
     let palette = [];
     let atlas = null;
     let glyphRects = new Map();
@@ -153,10 +157,14 @@
       if (!running) return;
       frameId = requestAnimationFrame(draw);
 
-      const elapsed = lastFrame ? now - lastFrame : (1000 / 60);
-      // Keep motion speed stable on high-refresh displays and after occasional slow frames.
-      const frameScale = Math.min(elapsed / (1000 / 60), 3);
-      lastFrame = now;
+      const frameInterval = scrolling ? scrollingFrameInterval : idleFrameInterval;
+      const elapsed = lastFrame ? now - lastFrame : frameInterval;
+      if (elapsed < frameInterval) return;
+
+      // Preserve the original Matrix travel speed even though the ambient layer
+      // does not need to repaint at the display's full refresh rate.
+      const frameScale = Math.min(elapsed / (1000 / 60), 4);
+      lastFrame = now - (elapsed % frameInterval);
 
       ctx.clearRect(0, 0, width, height);
       const darkTheme = (root.dataset.theme || 'dark') === 'dark';
@@ -198,6 +206,13 @@
     startMatrix();
 
     window.addEventListener('resize', requestResize, { passive: true });
+    window.addEventListener('scroll', () => {
+      scrolling = true;
+      window.clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = window.setTimeout(() => {
+        scrolling = false;
+      }, 120);
+    }, { passive: true });
     document.addEventListener('visibilitychange', () => {
       running = !document.hidden;
       if (running) startMatrix();

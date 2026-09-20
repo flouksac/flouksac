@@ -2991,3 +2991,27 @@ html[data-theme="light"] .article-body code:not(pre code) {
 .site-header .reading-progress {
   bottom: 0;
 }
+.matrix-canvas,
+html[data-theme="light"] .matrix-canvas {
+  filter: none;
+  contain: strict;
+}
+
+.matrix-canvas {
+  opacity: .30;
+}
+
+html[data-theme="light"] .matrix-canvas {
+  opacity: .45;
+}
+
+.site-header {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+}
+
+.site-scanlines {
+  mix-blend-mode: normal;
+  opacity: .065;
+}
