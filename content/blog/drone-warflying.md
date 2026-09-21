@@ -3,7 +3,7 @@ title: "RFC 1149 : Duh, Does The Pigeon Gets an Upgrade ?! - part 00"
 date: 2026-18-09
 draft: false
 deck: "Welcome to the first article covering my new rabbit hole: learning computers was cool, but can they fly ?"
-image: "/images/thumbs/pigeon-goes-brrr.png"
+image: "/static/images/thumbs/pigeon-goes-brrr.png"
 tags: ["fpv", "warflying", "crafting","wifi"]
 playlists: ["Red Teaming Drone ?"]
 ---
