@@ -186,19 +186,6 @@ It can potentially inspect radio environments from angles that are difficult to 
 
 It can also provide useful physical reconnaissance information as rooftops, access paths, cameras, external equipment, possible landing areas or simply a better understanding of the geometry of a site.
 
-Whether any of that is worth the enormous amount of additional complexity is precisely one of the questions this project needs to adress too.
-
-Because the alternative is obvious.
-I could put the exact same computer and Wi-Fi adapter inside a backpack.
-
-The backpack would probably have ten times the autonomy.
-
-It wouldn't require a trained pilot (only a carrier). \
-It wouldn't fall out of the sky. \
-It would attract significantly less attention. 
-
-And it would be much cheaper too.
-
 One scenario that originally motivated the project is this one below :
 
 During an engagement, fly close to a building remotly from the hotel, land the quad onto the roof of the target, shut down the power-hungry flight systems while keeping a low-power companion computer alive, and use that computer as a remotely administered wireless assessment computer.
@@ -217,7 +204,7 @@ The first version therefore has two separate capability sets:
 2. drone capabilities required to deliver, operate and recover that computer.
 
 
-### Companion-computer capabilities
+### Companion-computer capabilities
 
 
 | Capability            | Purpose                                                                              | passive/active | v1 priority  |
@@ -246,7 +233,7 @@ For now, the main requirements are simple:
 - able to correlate radio observations with flight/GPS telemetry
 - sufficiently modular
 
-### Aircraft capabilities
+### Aircraft capabilities
 
 
 | Feature                               | Purpose                                                                  | v1 priority |
@@ -288,7 +275,7 @@ With time almost everything required to do it became smaller, cheaper and consid
 
 A modern phone can contain GNSS, Wi-Fi, Bluetooth, cellular connectivity, storage, a battery and enough compute power to perform tasks that once justified carrying a laptop covered in adapters.
 
-Projects such as (WiGLE)[https://wigle.net/] (the Wireless Geographic Logging Engine) turned individual observations into a collaborative geographic dataset. \
+Projects such as [WiGLE](https://wigle.net/) (the Wireless Geographic Logging Engine) turned individual observations into a collaborative geographic dataset. \
 WiGLE has existed since 2001 and accepts geolocated wireless observations including network identifiers and security information. \
 Its modern Android client can log Wi-Fi, Bluetooth and cellular observations together with their geographic position.
 
@@ -314,7 +301,6 @@ Searching for wardriving produces decades of tools, writeups, datasets and proje
 Searching for warflying usually produces a much lighter output (could also be a dunning-kruger :p ):
 
 - research experiments by hobbyist attaaching wifi hardware or whatever to commercial drones
-
 - few (un)documented conference talks
 - security projects that never comme to life
 - abandoned GitHub repositories.
@@ -323,12 +309,12 @@ As far as I remember, the first person I heard about attempting something simila
 
 Then came some dorking.
 
-"wardriving" "drone"
-"pentesting" "drone"
-"warflying"
-"computer" "companion" "hacking"
-"drone" "wifi pentesting"
-"red teaming" "drone"
+"wardriving" "drone" \
+"pentesting" "drone" \
+"warflying" \
+"computer companion" "pentest" \
+"drone" "wifi pentesting" \
+"red teaming" "drone" \
 
 ...and progressively worst combinations of bunch of them.
 
@@ -359,8 +345,6 @@ Because drones are cool. \
 Putting Linux on things is cool too. \
 Antennas sticking out of custom carbon fiber frame and 3D printed TPU make everything 67% more cyberpunk.
 
-The rest of this series is basically an expensive experiment designed to find out whether my build survives contact with physics and if i will be able to make the good decisions.
-
 ------------------
 
 ## 04 // More about physics ? Is the drone de right platform ? 
@@ -374,16 +358,16 @@ With this in mind, the RF environment observed from the street can be quite diff
 
 Having direct line-of-sight helps but it isn't the only thing that matter. There also is the Fresnel zone which is an ellipsoidal area around the direct radio path. It can still be obstructed even when two antennas can technically see each other.
 
-![images/fresnel_zone.png]
+![Fresnel zone around a radio path](../../images/fresnel_zone.png)
 
 Antenna placement, shape and polarization also matter. \
 On a drone this becomes particularly important because the battery, carbon frame and electronics all sit pretty close to the antennas and signal strength alone isn't the only important thing.
 
-![images/polarization.jpg]
+![Antenna polarization](../../images/polarization.jpg)
 
 As mentionned the differents kinds of antennas can have a big impact on range / reception, for you information here a some of the different types of antennas, we will use in this build mushrooms, bipole and patch antennas. Here are some others types :
 
-![images/type_of_antenna.png]
+![Common radio antenna types](../../images/type_of_antenna.png)
 
 RSSI stands for received signal strength indicator, while SNR (signal-to-noise) compares that signal against the surrounding noise floor. A stronger RSSI doesn't necessarily mean that an access point is closer. \
 It depends of transmition power, antenna gain, obstacles, reflections and interference. \
@@ -407,8 +391,6 @@ At this point the idea starts sounding almost prepared on paper.
 
 I wanted a quad large enough to carry additional electronics, that is efficient enough to remain useful once those electronics are installed, open enough so I can share it / modify almost anything if needed. I also want it to be reliable, the companion computer fault tolerant enough that an error in a process on the companion computer doesn't also mean losing the mission/the drone.
 
-Fortunately, building this kind of machine in 2026 is considerably more accessible than it would have been even ten years ago.
-
 FPV drones grew out of the RC and racing communities, the ecosystem around them has become surprisingly mature. 
 Motors, flight controllers, ESCs, radio receivers, GNSS modules, cameras, video transmitters and carbon frames are now available as fairly standardized building blocks and somes are open sourced.  \
 A lot of the complexity has moved from designing electronic yourself to understanding how existing components interact and selecting the right combination for a particular aircraft.
@@ -423,15 +405,13 @@ If a GPS does not fit where you need it, you can design a mount. \
 If an antenna needs to sit ten centimeters away from the frame, you can build a support for it. \
 In this journey, FreeCAD (a 3D engineering/modeling open source alternative to solidworks) becomes important part of my designing process
 
-This modularity is one of the reasons FPV is particularly attractive for this project, the mentality arround this community is enjoyable.
-
 A commercial common camera drone gives you a very polished quad, but most of the interesting engineering decisions have already been made by somebody else at DJI or whatever other brand. \
 With a custom FPV build, the aircraft becomes closer to a flying chassis. \
 I can decide where the compute lives, how it is powered, which radios it carries, where the antennas go, which firmware controls the aircraft and how the different systems communicate.
 
 The trade-off is that every one of those decisions becomes my problem now...
 
-### A hobby ecosystem that became very serious
+### A hobby ecosystem that became very serious
 
 It is difficult to talk about the current FPV ecosystem without mentioning the war in Ukraine.
 
