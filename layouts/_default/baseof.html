@@ -5,6 +5,7 @@
   </head>
   <body class="kind-{{ .Kind }} section-{{ .Section | default "home" }}">
     <div class="site-backdrop" aria-hidden="true"></div>
+    <canvas class="matrix-canvas" id="matrixCanvas" aria-hidden="true"></canvas>
     <a class="skip-link" href="#main">Skip to content</a>
     {{ partial "header.html" . }}
     <main id="main" class="site-main">

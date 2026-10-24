@@ -64,6 +64,134 @@
     first.replaceWith(document.createTextNode(before), slash, document.createTextNode(after));
   });
 
+
+  // Ambient Matrix rain sits above the fixed SVG background, behind all UI.
+  // Throttled and atlas-rendered: avoids expensive fillText calls on each frame.
+  (() => {
+    const canvas = document.getElementById('matrixCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
+    if (!ctx) return;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const charset = [...'01abcdef0123456789{}[]<>/$#@+-=',
+      ...'アイウエオカキクケコサシスセソタチツテトナニヌネノマミムメモヤユヨラリルレロワン',
+      'FLK', 'flouksac', 'RmxvdWtzYWM=', '0x464c4b'];
+    const cell = 25;
+    const fontSize = 16;
+    const atlasCellWidth = 128;
+    const atlasCellHeight = 22;
+    const atlasColumns = 16;
+    const framePeriod = 1000 / 24;
+    let width = 0, height = 0, columns = [], atlas, glyphPositions = new Map();
+    let frame = 0, lastPaint = 0, resizeFrame = 0, motionReduced = motionQuery.matches;
+
+    const buildAtlas = () => {
+      const dark = root.dataset.theme !== 'light';
+      const palette = dark
+        ? ['#4bd3d8', '#ef4d77', '#a5bbc2']
+        : ['#007888', '#b13f68', '#385b64'];
+      const rowsPerPalette = Math.ceil(charset.length / atlasColumns);
+      const w = atlasColumns * atlasCellWidth;
+      const h = rowsPerPalette * palette.length * atlasCellHeight;
+      atlas = typeof OffscreenCanvas === 'function'
+        ? new OffscreenCanvas(w, h)
+        : document.createElement('canvas');
+      atlas.width = w;
+      atlas.height = h;
+      const buffer = atlas.getContext('2d', { alpha: true });
+      buffer.clearRect(0, 0, w, h);
+      buffer.font = `${fontSize}px ui-monospace, SFMono-Regular, Consolas, monospace`;
+      buffer.textBaseline = 'top';
+      glyphPositions = new Map();
+      palette.forEach((color, colorIndex) => {
+        buffer.fillStyle = color;
+        charset.forEach((glyph, glyphIndex) => {
+          const sx = (glyphIndex % atlasColumns) * atlasCellWidth;
+          const sy = (Math.floor(glyphIndex / atlasColumns) + colorIndex * rowsPerPalette) * atlasCellHeight;
+          buffer.fillText(glyph, sx, sy);
+          glyphPositions.set(`${colorIndex}:${glyphIndex}`, {
+            sx, sy, width: Math.min(atlasCellWidth, Math.ceil(buffer.measureText(glyph).width) + 3)
+          });
+        });
+      });
+    };
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      const count = Math.ceil(width / cell);
+      columns = Array.from({ length: count }, (_, index) => ({
+        x: index * cell,
+        y: Math.random() * (height + 200) - height,
+        speed: 25 + Math.random() * 48,
+        tail: 5 + Math.floor(Math.random() * 5),
+        color: Math.floor(Math.random() * 3),
+        seed: Math.floor(Math.random() * charset.length)
+      }));
+    };
+
+    const draw = (now) => {
+      frame = requestAnimationFrame(draw);
+      if (!motionReduced && lastPaint && now - lastPaint < framePeriod) return;
+      const dt = motionReduced ? 0 : Math.min(.08, (now - (lastPaint || now)) / 1000);
+      lastPaint = now;
+      ctx.clearRect(0, 0, width, height);
+      const cycle = Math.floor(now / 230);
+      for (const col of columns) {
+        for (let i = col.tail - 1; i >= 0; i--) {
+          const y = col.y - i * cell;
+          if (y < -cell || y > height) continue;
+          const idx = (col.seed + i * 17 + cycle * 3) % charset.length;
+          const sprite = glyphPositions.get(`${col.color}:${idx}`);
+          if (!sprite || !atlas) continue;
+          ctx.globalAlpha = (.13 + .62 * Math.pow(1 - i / col.tail, 1.8));
+          ctx.drawImage(atlas, sprite.sx, sprite.sy, sprite.width, atlasCellHeight,
+            col.x, y, sprite.width, atlasCellHeight);
+        }
+        if (!motionReduced) {
+          col.y += col.speed * dt;
+          if (col.y - col.tail * cell > height) {
+            col.y = -Math.random() * 300;
+            col.speed = 25 + Math.random() * 48;
+            col.color = Math.floor(Math.random() * 3);
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+      if (motionReduced) stop();
+    };
+
+    const stop = () => { if (frame) cancelAnimationFrame(frame); frame = 0; };
+    const start = () => {
+      if (frame || document.hidden) return;
+      lastPaint = 0;
+      frame = requestAnimationFrame(draw);
+    };
+    const requestResize = () => {
+      if (resizeFrame) return;
+      resizeFrame = requestAnimationFrame(() => { resizeFrame = 0; resize(); if (motionReduced) start(); });
+    };
+    buildAtlas();
+    resize();
+    start();
+    window.addEventListener('resize', requestResize, { passive: true });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else start(); });
+    motionQuery.addEventListener?.('change', (event) => {
+      motionReduced = event.matches;
+      stop();
+      start();
+    });
+    new MutationObserver(() => { buildAtlas(); if (motionReduced) start(); })
+      .observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  })();
+
   const searchInput = document.querySelector('[data-search-input]');
   const searchResults = document.querySelector('[data-search-results]');
   if (searchInput && searchResults) {

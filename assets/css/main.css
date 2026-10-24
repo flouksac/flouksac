@@ -3022,8 +3022,7 @@ body {
 body::before,
 body::after,
 .site-noise,
-.site-scanlines,
-.matrix-canvas {
+.site-scanlines {
   display: none !important;
 }
 .site-backdrop {
@@ -3330,4 +3329,56 @@ body.flk-mermaid-modal-open { overflow: hidden; }
   .flk-mermaid__tool { min-width: 2rem; padding: .32rem .4rem; }
   .flk-mermaid__hint { padding-inline: .65rem; }
   .flk-mermaid.is-expanded { inset: .3rem; }
+}
+
+
+/* Matrix glyphs float over the static contour artwork, never over the content.
+   Both layers are fixed to the viewport so only the article scrolls. */
+.matrix-canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100dvh;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .82;
+  filter: none;
+  contain: strict;
+}
+html[data-theme="light"] .matrix-canvas { opacity: .68; }
+/* The article, navigation and footer sit over both ambient layers. */
+.site-main, .site-footer { z-index: 3; }
+.site-header { z-index: 80; }
+
+/* Markdown illustrations: retain natural aspect ratio, avoid giant screenshots
+   and keep standalone/linked images centred in the reading column. */
+.article-body p > img,
+.article-body p > a > img,
+.article-body > img,
+.article-body > picture > img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(100%, 640px);
+  max-height: min(65vh, 520px);
+  object-fit: contain;
+  margin: 1.35rem auto;
+  border: 1px solid rgba(var(--secondary-rgb), .18);
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+}
+.article-body p:has(> img:only-child),
+.article-body p:has(> a:only-child > img:only-child) {
+  text-align: center;
+}
+.article-body p > a:has(> img:only-child) { display: inline-block; max-width: 100%; }
+.article-body p > a > img { margin-block: .3rem; }
+@media (max-width: 680px) {
+  .article-body p > img,
+  .article-body p > a > img,
+  .article-body > img,
+  .article-body > picture > img {
+    max-height: 55vh;
+    margin-block: 1rem;
+  }
 }
