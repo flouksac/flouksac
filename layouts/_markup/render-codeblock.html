@@ -9,6 +9,7 @@
   <figure class="flk-mermaid">
     <figcaption class="flk-mermaid__bar">DIAGRAM <span aria-hidden="true">//</span> MERMAID</figcaption>
     <pre class="mermaid flk-mermaid__canvas">{{ .Inner | htmlEscape }}</pre>
+    <p class="flk-mermaid__status" role="status" hidden></p>
     <details class="flk-mermaid__source">
       <summary>View source</summary>
       <pre><code>{{ .Inner | htmlEscape }}</code></pre>

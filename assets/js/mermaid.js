@@ -9,19 +9,36 @@ const currentTheme = () => document.documentElement.dataset.theme === 'light' ? 
 
 const getLibrary = async () => {
   if (!loading) {
-    loading = import('https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.esm.min.mjs')
-      .then(({ default: mermaid }) => {
-        library = mermaid;
-        mermaid.initialize({
-          startOnLoad: false,
-          securityLevel: 'strict',
-          theme: currentTheme(),
-          fontFamily: 'Space Grotesk, sans-serif',
-          flowchart: { htmlLabels: false, useMaxWidth: true },
-          sequence: { useMaxWidth: true, showSequenceNumbers: false }
-        });
-        return mermaid;
-      });
+    // A strict privacy setup or DNS/CDN issue can block one provider. Both
+    // hosts serve the same pinned Mermaid release and its relative chunks.
+    const providers = [
+      'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.esm.min.mjs',
+      'https://unpkg.com/mermaid@11.17.2/dist/mermaid.esm.min.mjs'
+    ];
+    loading = (async () => {
+      let lastError;
+      for (const url of providers) {
+        try {
+          const { default: mermaid } = await import(url);
+          mermaid.initialize({
+            startOnLoad: false,
+            securityLevel: 'strict',
+            theme: currentTheme(),
+            fontFamily: 'Space Grotesk, sans-serif',
+            flowchart: { htmlLabels: false, useMaxWidth: true },
+            sequence: { useMaxWidth: true, showSequenceNumbers: false }
+          });
+          library = mermaid;
+          return mermaid;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError;
+    })().catch((error) => {
+      loading = null; // Retry if a later render is requested.
+      throw error;
+    });
   }
   return loading;
 };
@@ -41,12 +58,26 @@ const render = (targets, resetTheme = false) => {
         node.removeAttribute('data-processed');
       }
       await mermaid.run({ nodes: targets });
-      targets.forEach((node) => node.closest('.flk-mermaid')?.classList.add('is-rendered'));
+      targets.forEach((node) => {
+        const figure = node.closest('.flk-mermaid');
+        figure?.classList.remove('has-error');
+        figure?.classList.add('is-rendered');
+        const status = figure?.querySelector('.flk-mermaid__status');
+        if (status) status.hidden = true;
+      });
     } catch (error) {
-      // Leave Markdown diagram source visible if loading or parsing fails.
+      // Never lose the source. Expose a useful hint instead of silently
+      // leaving raw Mermaid syntax on a published article.
       targets.forEach((node) => {
         node.textContent = sources.get(node);
-        node.closest('.flk-mermaid')?.classList.add('has-error');
+        const figure = node.closest('.flk-mermaid');
+        figure?.classList.remove('is-rendered');
+        figure?.classList.add('has-error');
+        const status = figure?.querySelector('.flk-mermaid__status');
+        if (status) {
+          status.hidden = false;
+          status.textContent = 'Unable to render this diagram. The Mermaid library may be blocked by your browser or network, or the diagram syntax may be invalid. Source is shown below.';
+        }
       });
       console.warn('Mermaid diagram rendering unavailable:', error);
     }

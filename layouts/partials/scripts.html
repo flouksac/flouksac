@@ -1,7 +1,8 @@
 {{ $js := resources.Get "js/site.js" | minify | fingerprint }}
 <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
 
-{{ if .Page.Store.Get "hasMermaid" }}
+{{/* The render hook sets hasMermaid; checking rendered content also covers cached content. */}}
+{{ if or (.Page.Store.Get "hasMermaid") (in .Content "flk-mermaid") }}
 {{ $mermaid := resources.Get "js/mermaid.js" | minify | fingerprint }}
 <script type="module" src="{{ $mermaid.RelPermalink }}" integrity="{{ $mermaid.Data.Integrity }}"></script>
 {{ end }}

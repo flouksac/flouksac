@@ -3034,13 +3034,13 @@ body::after,
   z-index: 0;
   pointer-events: none;
   background-color: var(--bg);
-  background-image: url("../images/background/topography-dark.svg");
+  background-image: url("../background/topography-dark.svg");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
 }
 html[data-theme="light"] .site-backdrop {
-  background-image: url("../images/background/topography-light.svg");
+  background-image: url("../background/topography-light.svg");
 }
 .site-header, .site-main, .site-footer { position: relative; z-index: 3; }
 .site-header {
@@ -3162,6 +3162,14 @@ html[data-theme="light"] .site-backdrop {
   max-height: 280px;
   overflow: auto;
   font-size: .78rem;
+}
+.flk-mermaid__status:not([hidden]) {
+  display: block;
+  margin: 0;
+  padding: .7rem .9rem;
+  border-top: 1px solid rgba(var(--primary-rgb), .3);
+  color: var(--muted);
+  font: .78rem/1.5 var(--font-ui);
 }
 .flk-mermaid.has-error .flk-mermaid__bar::after {
   content: " — source available";
