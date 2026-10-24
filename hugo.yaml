@@ -57,7 +57,7 @@ params:
   email: "flouksac@proton.me"
   gpgFingerprint: "58C3 468C 17BF 48E7 339D  A3F4 0BA5 8681 7AC8 68AD"
   accentLabel: "netrunner"
-  dateFormat: "2026-01-02"
+  dateFormat: "2006-01-02"
   showReadingTime: true
   # keywords:
   #   - cybersecurity
