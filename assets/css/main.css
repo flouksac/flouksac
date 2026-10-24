@@ -3019,10 +3019,10 @@ html[data-theme="light"] .matrix-canvas {
 body {
   background: var(--bg);
 }
+/* The old radial decorations stay disabled, while the site's original
+   noise and scanline overlays are preserved over the static SVG backdrop. */
 body::before,
-body::after,
-.site-noise,
-.site-scanlines {
+body::after {
   display: none !important;
 }
 .site-backdrop {
@@ -3332,8 +3332,9 @@ body.flk-mermaid-modal-open { overflow: hidden; }
 }
 
 
-/* Matrix glyphs float over the static contour artwork, never over the content.
-   Both layers are fixed to the viewport so only the article scrolls. */
+/* Restore original ambient presentation: the original Matrix engine and
+   theme palettes sit quietly above the fixed topography, behind page content.
+   Keep both original HUD texture layers, with no effect on reading surfaces. */
 .matrix-canvas {
   position: fixed;
   inset: 0;
@@ -3342,12 +3343,23 @@ body.flk-mermaid-modal-open { overflow: hidden; }
   height: 100dvh;
   z-index: 1;
   pointer-events: none;
-  opacity: .82;
+  opacity: .28;
   filter: none;
+  mix-blend-mode: normal;
   contain: strict;
 }
-html[data-theme="light"] .matrix-canvas { opacity: .68; }
-/* The article, navigation and footer sit over both ambient layers. */
+html[data-theme="light"] .matrix-canvas { opacity: .43; }
+.site-noise,
+.site-scanlines {
+  display: block;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.site-noise { opacity: var(--noise-opacity); }
+.site-scanlines { opacity: .035; mix-blend-mode: normal; }
+/* Article and header remain above all decorative effects. */
 .site-main, .site-footer { z-index: 3; }
 .site-header { z-index: 80; }
 
