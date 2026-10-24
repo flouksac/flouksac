@@ -113,19 +113,286 @@ function themeAwareSource(source) {
   );
 }
 
-function keepTextReadable(node) {
-  const svg = node.querySelector('svg');
-  const intrinsicWidth = svg?.viewBox?.baseVal?.width;
-  if (!intrinsicWidth || !Number.isFinite(intrinsicWidth)) return;
-  // Keep Mermaid's native text size. Large sequence diagrams scroll sideways
-  // rather than shrinking every label to 8px on phones or narrow blog layouts.
-  svg.style.width = `${Math.ceil(intrinsicWidth)}px`;
-  svg.style.maxWidth = 'none';
-  svg.style.height = 'auto';
-  node.tabIndex = 0;
-  node.setAttribute('role', 'region');
-  node.setAttribute('aria-label', 'Mermaid diagram; scroll horizontally if necessary');
+// Native, dependency-free pan/zoom. Diagrams initially fit entirely inside
+// the viewport; users can zoom, drag, pinch, use the keyboard, or expand.
+const viewers = new Map();
+let expandedViewer = null;
+
+function clamp(value, minimum, maximum) {
+  return Math.max(minimum, Math.min(maximum, value));
 }
+
+function applyTransform(viewer) {
+  viewer.node.style.transform = `translate(${viewer.x}px, ${viewer.y}px) scale(${viewer.scale})`;
+}
+
+function confine(viewer) {
+  const width = viewer.viewport.clientWidth;
+  const height = viewer.viewport.clientHeight;
+  const contentWidth = viewer.svgWidth * viewer.scale;
+  const contentHeight = viewer.svgHeight * viewer.scale;
+  viewer.x = contentWidth <= width
+    ? (width - contentWidth) / 2
+    : clamp(viewer.x, width - contentWidth, 0);
+  viewer.y = contentHeight <= height
+    ? (height - contentHeight) / 2
+    : clamp(viewer.y, height - contentHeight, 0);
+}
+
+function fitDiagram(viewer) {
+  const width = viewer.viewport.clientWidth;
+  const height = viewer.viewport.clientHeight;
+  if (!width || !height || !viewer.svgWidth || !viewer.svgHeight) return;
+  viewer.fitScale = Math.min(1, (width - 24) / viewer.svgWidth, (height - 24) / viewer.svgHeight);
+  viewer.scale = viewer.fitScale;
+  viewer.x = (width - viewer.svgWidth * viewer.scale) / 2;
+  viewer.y = (height - viewer.svgHeight * viewer.scale) / 2;
+  viewer.changed = false;
+  applyTransform(viewer);
+}
+
+function zoomAt(viewer, x, y, requestedScale) {
+  const lower = Math.max(.05, viewer.fitScale * .5);
+  const upper = Math.max(2.5, viewer.fitScale * 5);
+  const next = clamp(requestedScale, lower, upper);
+  const ratio = next / viewer.scale;
+  viewer.x = x - (x - viewer.x) * ratio;
+  viewer.y = y - (y - viewer.y) * ratio;
+  viewer.scale = next;
+  viewer.changed = true;
+  confine(viewer);
+  applyTransform(viewer);
+}
+
+function localPoint(viewer, clientX, clientY) {
+  const r = viewer.viewport.getBoundingClientRect();
+  return { x: clientX - r.left, y: clientY - r.top };
+}
+
+function sizeViewer(viewer, reset = false) {
+  if (!viewer.svgWidth || !viewer.svgHeight) return;
+  const width = Math.max(240, viewer.viewport.clientWidth || viewer.figure.clientWidth - 2);
+  if (!viewer.expanded) {
+    const availableHeight = window.innerWidth <= 680 ? 440 : 580;
+    const heightAtWidth = viewer.svgHeight * Math.min(1, (width - 24) / viewer.svgWidth) + 24;
+    const height = Math.round(clamp(heightAtWidth, 260, availableHeight));
+    if (viewer.viewport.style.height !== `${height}px`) viewer.viewport.style.height = `${height}px`;
+  } else {
+    viewer.viewport.style.removeProperty('height');
+  }
+  if (reset || !viewer.changed) {
+    fitDiagram(viewer);
+  } else {
+    viewer.fitScale = Math.min(1,
+      (viewer.viewport.clientWidth - 24) / viewer.svgWidth,
+      (viewer.viewport.clientHeight - 24) / viewer.svgHeight);
+    confine(viewer);
+    applyTransform(viewer);
+  }
+}
+
+function toggleExpanded(viewer, expand) {
+  if (expand && expandedViewer && expandedViewer !== viewer) toggleExpanded(expandedViewer, false);
+  if (expand === viewer.expanded) return;
+  viewer.expanded = expand;
+  viewer.figure.classList.toggle('is-expanded', expand);
+  if (expand) {
+    viewer.placeholder = document.createComment('Mermaid diagram original position');
+    viewer.figure.before(viewer.placeholder);
+    document.body.appendChild(viewer.figure);
+    document.body.classList.add('flk-mermaid-modal-open');
+    expandedViewer = viewer;
+  } else {
+    viewer.placeholder?.replaceWith(viewer.figure);
+    viewer.placeholder = null;
+    document.body.classList.remove('flk-mermaid-modal-open');
+    expandedViewer = null;
+  }
+  viewer.expandButton.textContent = expand ? 'CLOSE' : 'EXPAND';
+  viewer.expandButton.setAttribute('aria-label', expand ? 'Close expanded diagram' : 'Expand diagram');
+  // Re-fit to the new view. Preserve no hidden horizontal scroll position.
+  requestAnimationFrame(() => {
+    sizeViewer(viewer, true);
+    viewer.expandButton.focus({ preventScroll: true });
+  });
+}
+
+function makeViewer(node) {
+  const figure = node.closest('.flk-mermaid');
+  if (!figure) return null;
+  const viewport = document.createElement('div');
+  viewport.className = 'flk-mermaid__viewport';
+  viewport.tabIndex = 0;
+  viewport.setAttribute('role', 'region');
+  viewport.setAttribute('aria-label', 'Interactive Mermaid diagram. Drag to move; use plus, minus and arrow keys, or Ctrl and mouse wheel to zoom.');
+  node.before(viewport);
+  viewport.append(node);
+
+  const bar = figure.querySelector('.flk-mermaid__bar');
+  const tools = document.createElement('span');
+  tools.className = 'flk-mermaid__tools';
+  tools.setAttribute('role', 'toolbar');
+  tools.setAttribute('aria-label', 'Diagram controls');
+  function button(text, label, title) {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'flk-mermaid__tool';
+    el.textContent = text;
+    el.setAttribute('aria-label', label);
+    el.title = title;
+    tools.append(el);
+    return el;
+  }
+  const minus = button('−', 'Zoom out', 'Zoom out');
+  const plus = button('+', 'Zoom in', 'Zoom in');
+  const fit = button('FIT', 'Fit entire diagram', 'Fit diagram to window (0)');
+  const expand = button('EXPAND', 'Expand diagram', 'Expand diagram to screen');
+  bar?.append(tools);
+
+  const hint = document.createElement('p');
+  hint.className = 'flk-mermaid__hint';
+  hint.textContent = 'Drag to pan · Ctrl + wheel or pinch to zoom · FIT to reset';
+  viewport.after(hint);
+
+  const viewer = {
+    node, figure, viewport, expandButton: expand,
+    svgWidth: 0, svgHeight: 0, scale: 1, fitScale: 1,
+    x: 0, y: 0, changed: false, expanded: false,
+    pointers: new Map(), gesture: null, placeholder: null
+  };
+  const midpoint = () => ({x: viewport.clientWidth / 2, y: viewport.clientHeight / 2});
+  minus.addEventListener('click', () => {
+    const pt = midpoint(); zoomAt(viewer, pt.x, pt.y, viewer.scale / 1.3);
+  });
+  plus.addEventListener('click', () => {
+    const pt = midpoint(); zoomAt(viewer, pt.x, pt.y, viewer.scale * 1.3);
+  });
+  fit.addEventListener('click', () => fitDiagram(viewer));
+  expand.addEventListener('click', () => toggleExpanded(viewer, !viewer.expanded));
+
+  // Keep ordinary wheel scrolling available to the blog reader.
+  viewport.addEventListener('wheel', (event) => {
+    if (!event.ctrlKey && !event.metaKey) return;
+    event.preventDefault();
+    const pt = localPoint(viewer, event.clientX, event.clientY);
+    zoomAt(viewer, pt.x, pt.y, viewer.scale * Math.exp(-event.deltaY * .008));
+  }, { passive: false });
+  viewport.addEventListener('dblclick', (event) => {
+    event.preventDefault();
+    const pt = localPoint(viewer, event.clientX, event.clientY);
+    zoomAt(viewer, pt.x, pt.y, viewer.scale * 1.5);
+  });
+
+  function pairGesture() {
+    const values = [...viewer.pointers.values()];
+    if (values.length !== 2) return null;
+    const first = localPoint(viewer, values[0].x, values[0].y);
+    const second = localPoint(viewer, values[1].x, values[1].y);
+    return {
+      x: (first.x + second.x) / 2,
+      y: (first.y + second.y) / 2,
+      distance: Math.hypot(first.x - second.x, first.y - second.y)
+    };
+  }
+  viewport.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.preventDefault();
+    viewport.focus({ preventScroll: true });
+    viewport.setPointerCapture(event.pointerId);
+    viewer.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    viewer.gesture = pairGesture();
+    viewport.classList.add('is-dragging');
+  });
+  viewport.addEventListener('pointermove', event => {
+    const previous = viewer.pointers.get(event.pointerId);
+    if (!previous) return;
+    viewer.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (viewer.pointers.size === 2) {
+      const gesture = pairGesture();
+      if (gesture && viewer.gesture) {
+        zoomAt(viewer, viewer.gesture.x, viewer.gesture.y,
+          viewer.scale * (gesture.distance / Math.max(1, viewer.gesture.distance)));
+        viewer.x += gesture.x - viewer.gesture.x;
+        viewer.y += gesture.y - viewer.gesture.y;
+        confine(viewer);
+        applyTransform(viewer);
+      }
+      viewer.gesture = gesture;
+    } else if (viewer.pointers.size === 1) {
+      viewer.x += event.clientX - previous.x;
+      viewer.y += event.clientY - previous.y;
+      viewer.changed = true;
+      confine(viewer);
+      applyTransform(viewer);
+    }
+  });
+  function release(event) {
+    viewer.pointers.delete(event.pointerId);
+    viewer.gesture = pairGesture();
+    if (!viewer.pointers.size) viewport.classList.remove('is-dragging');
+  }
+  viewport.addEventListener('pointerup', release);
+  viewport.addEventListener('pointercancel', release);
+  viewport.addEventListener('keydown', event => {
+    const pt = midpoint();
+    let handled = true;
+    switch (event.key) {
+      case '+': case '=': zoomAt(viewer, pt.x, pt.y, viewer.scale * 1.3); break;
+      case '-': case '_': zoomAt(viewer, pt.x, pt.y, viewer.scale / 1.3); break;
+      case '0': case 'Home': fitDiagram(viewer); break;
+      case 'ArrowLeft': viewer.x += 48; break;
+      case 'ArrowRight': viewer.x -= 48; break;
+      case 'ArrowUp': viewer.y += 48; break;
+      case 'ArrowDown': viewer.y -= 48; break;
+      default: handled = false;
+    }
+    if (!handled) return;
+    event.preventDefault();
+    if (event.key.startsWith('Arrow')) {
+      viewer.changed = true;
+      confine(viewer);
+      applyTransform(viewer);
+    }
+  });
+  viewers.set(node, viewer);
+  return viewer;
+}
+
+function mountPanZoom(node) {
+  const svg = node.querySelector('svg');
+  if (!svg) return;
+  const viewBox = svg.viewBox?.baseVal;
+  let width = viewBox?.width || 0;
+  let height = viewBox?.height || 0;
+  if (!width || !height) {
+    const bbox = svg.getBBox();
+    width = bbox.width;
+    height = bbox.height;
+  }
+  if (!width || !height) return;
+  let viewer = viewers.get(node);
+  if (!viewer) viewer = makeViewer(node);
+  if (!viewer) return;
+  viewer.svgWidth = width;
+  viewer.svgHeight = height;
+  svg.style.width = `${width}px`;
+  svg.style.height = `${height}px`;
+  svg.style.maxWidth = 'none';
+  node.style.width = `${width}px`;
+  node.style.height = `${height}px`;
+  node.tabIndex = -1; // the surrounding viewport is the keyboard target
+  sizeViewer(viewer, true);
+}
+
+window.addEventListener('resize', () => {
+  for (const viewer of viewers.values()) sizeViewer(viewer);
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && expandedViewer) {
+    event.preventDefault();
+    toggleExpanded(expandedViewer, false);
+  }
+});
 
 let libraryPromise;
 let library;
@@ -189,7 +456,7 @@ function render(targets) {
         const figure = node.closest('.flk-mermaid');
         figure?.classList.remove('has-error');
         figure?.classList.add('is-rendered');
-        keepTextReadable(node);
+        mountPanZoom(node);
         const status = figure?.querySelector('.flk-mermaid__status');
         if (status) status.hidden = true;
       }
