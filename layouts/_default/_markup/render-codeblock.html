@@ -1,9 +1,3 @@
-{{- /*
-  FLK code block render hook
-  - Keeps Hugo/Chroma syntax highlighting when the language is supported.
-  - Renders unsupported languages as plain text.
-  - Copy logic lives in assets/js/site.js so the hook stays CSP-friendly and maintainable.
-*/ -}}
 {{- if eq (lower .Type) "mermaid" -}}
   {{- .Page.Store.Set "hasMermaid" true -}}
   <figure class="flk-mermaid">

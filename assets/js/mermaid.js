@@ -1,74 +1,118 @@
-// Diagram renderer is loaded only on pages that contain fenced Mermaid blocks.
-// All content stays readable as source when the external engine is unavailable.
-const nodes = [...document.querySelectorAll('.flk-mermaid__canvas')];
-const sources = new Map(nodes.map((node) => [node, node.textContent.trim()]));
-let library = null;
-let loading = null;
-let rendering = Promise.resolve();
-const currentTheme = () => document.documentElement.dataset.theme === 'light' ? 'neutral' : 'dark';
+// Mermaid bootstrap. Renders Hugo's specific Mermaid hook and safely upgrades
+// unconverted ```mermaid fences produced by older Hugo template layouts.
+// The heavy Mermaid library is fetched only on pages containing diagrams.
+function upgradeLegacyCodeBlocks() {
+  const rawBlocks = document.querySelectorAll(
+    'pre code.language-mermaid, pre code[data-lang="mermaid"]'
+  );
 
-const getLibrary = async () => {
-  if (!loading) {
-    // A strict privacy setup or DNS/CDN issue can block one provider. Both
-    // hosts serve the same pinned Mermaid release and its relative chunks.
-    const providers = [
-      'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.esm.min.mjs',
-      'https://unpkg.com/mermaid@11.17.2/dist/mermaid.esm.min.mjs'
-    ];
-    loading = (async () => {
+  for (const code of rawBlocks) {
+    if (code.closest('.flk-mermaid')) continue;
+
+    const sourceText = code.textContent.trim();
+    if (!sourceText) continue;
+
+    const oldWrapper = code.closest('.highlight') || code.closest('pre');
+    if (!oldWrapper) continue;
+
+    const figure = document.createElement('figure');
+    figure.className = 'flk-mermaid';
+
+    const heading = document.createElement('figcaption');
+    heading.className = 'flk-mermaid__bar';
+    heading.textContent = 'DIAGRAM // MERMAID';
+
+    const diagram = document.createElement('pre');
+    diagram.className = 'mermaid flk-mermaid__canvas';
+    diagram.textContent = sourceText;
+
+    const status = document.createElement('p');
+    status.className = 'flk-mermaid__status';
+    status.setAttribute('role', 'status');
+    status.hidden = true;
+
+    const details = document.createElement('details');
+    details.className = 'flk-mermaid__source';
+    const summary = document.createElement('summary');
+    summary.textContent = 'View source';
+    const sourcePre = document.createElement('pre');
+    const sourceCode = document.createElement('code');
+    sourceCode.textContent = sourceText;
+    sourcePre.appendChild(sourceCode);
+    details.append(summary, sourcePre);
+
+    figure.append(heading, diagram, status, details);
+    oldWrapper.replaceWith(figure);
+  }
+}
+
+upgradeLegacyCodeBlocks();
+
+const nodes = [...document.querySelectorAll('.flk-mermaid__canvas')];
+const sources = new Map(nodes.map(node => [node, node.textContent.trim()]));
+const currentTheme = () => document.documentElement.dataset.theme === 'light' ? 'neutral' : 'dark';
+let libraryPromise;
+let library;
+let rendering = Promise.resolve();
+
+async function getLibrary() {
+  if (!libraryPromise) {
+    libraryPromise = (async () => {
+      const providers = [
+        'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.esm.min.mjs',
+        'https://unpkg.com/mermaid@11.17.2/dist/mermaid.esm.min.mjs'
+      ];
       let lastError;
       for (const url of providers) {
         try {
-          const { default: mermaid } = await import(url);
-          mermaid.initialize({
-            startOnLoad: false,
-            securityLevel: 'strict',
-            theme: currentTheme(),
-            fontFamily: 'Space Grotesk, sans-serif',
-            flowchart: { htmlLabels: false, useMaxWidth: true },
-            sequence: { useMaxWidth: true, showSequenceNumbers: false }
-          });
+          const module = await import(url);
+          const mermaid = module.default;
+          if (!mermaid || typeof mermaid.run !== 'function') throw new Error('Invalid Mermaid module');
           library = mermaid;
           return mermaid;
         } catch (error) {
           lastError = error;
         }
       }
-      throw lastError;
+      throw lastError || new Error('Unable to download the Mermaid library');
     })().catch((error) => {
-      loading = null; // Retry if a later render is requested.
+      libraryPromise = undefined;
       throw error;
     });
   }
-  return loading;
-};
+  return libraryPromise;
+}
 
-const render = (targets, resetTheme = false) => {
+function configure(mermaid) {
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'strict',
+    theme: currentTheme(),
+    fontFamily: 'Space Grotesk, sans-serif',
+    flowchart: { htmlLabels: false, useMaxWidth: true },
+    sequence: { useMaxWidth: true }
+  });
+}
+
+function render(targets) {
   rendering = rendering.then(async () => {
     try {
       const mermaid = await getLibrary();
-      if (resetTheme) {
-        mermaid.initialize({ startOnLoad: false, securityLevel: 'strict',
-          theme: currentTheme(), fontFamily: 'Space Grotesk, sans-serif',
-          flowchart: { htmlLabels: false, useMaxWidth: true }, sequence: { useMaxWidth: true }
-        });
-      }
+      configure(mermaid);
       for (const node of targets) {
         node.textContent = sources.get(node);
         node.removeAttribute('data-processed');
       }
       await mermaid.run({ nodes: targets });
-      targets.forEach((node) => {
+      for (const node of targets) {
         const figure = node.closest('.flk-mermaid');
         figure?.classList.remove('has-error');
         figure?.classList.add('is-rendered');
         const status = figure?.querySelector('.flk-mermaid__status');
         if (status) status.hidden = true;
-      });
+      }
     } catch (error) {
-      // Never lose the source. Expose a useful hint instead of silently
-      // leaving raw Mermaid syntax on a published article.
-      targets.forEach((node) => {
+      for (const node of targets) {
         node.textContent = sources.get(node);
         const figure = node.closest('.flk-mermaid');
         figure?.classList.remove('is-rendered');
@@ -76,33 +120,35 @@ const render = (targets, resetTheme = false) => {
         const status = figure?.querySelector('.flk-mermaid__status');
         if (status) {
           status.hidden = false;
-          status.textContent = 'Unable to render this diagram. The Mermaid library may be blocked by your browser or network, or the diagram syntax may be invalid. Source is shown below.';
+          status.textContent = `Unable to render Mermaid: ${error?.message || String(error)}. Diagram source is preserved below.`;
         }
-      });
-      console.warn('Mermaid diagram rendering unavailable:', error);
+      }
+      console.error('Mermaid rendering failed:', error);
     }
   });
-};
+}
 
 if (nodes.length) {
-  const rendered = new Set();
+  const activated = new Set();
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
-        if (!entry.isIntersecting || rendered.has(entry.target)) continue;
-        rendered.add(entry.target);
+        if (!entry.isIntersecting || activated.has(entry.target)) continue;
+        activated.add(entry.target);
         observer.unobserve(entry.target);
         render([entry.target]);
       }
-    }, { rootMargin: '600px' });
-    nodes.forEach((node) => observer.observe(node));
+    }, { rootMargin: '700px' });
+    nodes.forEach(node => observer.observe(node));
   } else {
-    nodes.forEach((node) => rendered.add(node));
+    nodes.forEach(node => activated.add(node));
     render(nodes);
   }
 
-  // Re-render only diagrams already on screen when the site's theme changes.
   new MutationObserver(() => {
-    if (library && rendered.size) render([...rendered], true);
-  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    if (library && activated.size) render([...activated]);
+  }).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme']
+  });
 }

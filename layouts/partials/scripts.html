@@ -1,8 +1,7 @@
 {{ $js := resources.Get "js/site.js" | minify | fingerprint }}
 <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
 
-{{/* The render hook sets hasMermaid; checking rendered content also covers cached content. */}}
-{{ if or (.Page.Store.Get "hasMermaid") (in .Content "flk-mermaid") }}
+{{/* Small local bootstrap always loads. It fetches Mermaid only if a diagram is present.
+     This also supports code fences emitted by older Hugo templates without a render hook. */}}
 {{ $mermaid := resources.Get "js/mermaid.js" | minify | fingerprint }}
 <script type="module" src="{{ $mermaid.RelPermalink }}" integrity="{{ $mermaid.Data.Integrity }}"></script>
-{{ end }}
