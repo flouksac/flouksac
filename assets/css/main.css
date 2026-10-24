@@ -3138,10 +3138,28 @@ html[data-theme="light"] .site-backdrop {
 }
 .flk-mermaid__canvas svg {
   display: block;
-  max-width: 100%;
-  margin: 0 auto;
+  max-width: none !important;
+  margin: 0;
   height: auto;
   overflow: visible;
+}
+/* Contrast follows the site theme; larger diagrams keep readable label sizes
+   instead of being squeezed down to the article column or phone width. */
+.flk-mermaid.is-rendered .flk-mermaid__canvas {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--secondary-rgb), .5) transparent;
+}
+.flk-mermaid.is-rendered .flk-mermaid__canvas:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: -2px;
+}
+html[data-theme="dark"] .flk-mermaid {
+  background: #090e14;
+}
+html[data-theme="light"] .flk-mermaid {
+  background: #fafcfb;
 }
 .flk-mermaid__source {
   border-top: 1px solid rgba(var(--secondary-rgb), .18);

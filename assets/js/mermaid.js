@@ -50,7 +50,83 @@ upgradeLegacyCodeBlocks();
 
 const nodes = [...document.querySelectorAll('.flk-mermaid__canvas')];
 const sources = new Map(nodes.map(node => [node, node.textContent.trim()]));
-const currentTheme = () => document.documentElement.dataset.theme === 'light' ? 'neutral' : 'dark';
+const isLightTheme = () => document.documentElement.dataset.theme === 'light';
+
+// The site has its own color system. Mermaid's stock dark/neutral themes use
+// unrelated palettes and can leave labels invisible over sequence regions.
+const palettes = {
+  dark: {
+    darkMode: true,
+    background: '#090e14',
+    primaryColor: '#152431', primaryBorderColor: '#65c9d0', primaryTextColor: '#f4fbff',
+    secondaryColor: '#213b48', secondaryBorderColor: '#5bb5c0', secondaryTextColor: '#f4fbff',
+    tertiaryColor: '#1a2933', tertiaryBorderColor: '#6d8997', tertiaryTextColor: '#f4fbff',
+    mainBkg: '#152431', textColor: '#ecf7fb', lineColor: '#8dbecb',
+    nodeTextColor: '#f4fbff', clusterBkg: '#15222d', clusterBorder: '#587b89',
+    edgeLabelBackground: '#152431',
+    actorBkg: '#152431', actorBorder: '#65c9d0', actorTextColor: '#f4fbff',
+    actorLineColor: '#87a7b4', signalColor: '#93cbd5', signalTextColor: '#ecf7fb',
+    labelBoxBkgColor: '#213644', labelBoxBorderColor: '#65c9d0',
+    labelTextColor: '#f4fbff', loopTextColor: '#f4fbff',
+    activationBkgColor: '#274c59', activationBorderColor: '#6ac4ce',
+    noteBkgColor: '#29313f', noteBorderColor: '#77909f', noteTextColor: '#f4fbff',
+    sequenceNumberColor: '#ffe48b'
+  },
+  light: {
+    darkMode: false,
+    background: '#fafcfb',
+    primaryColor: '#e4f4f2', primaryBorderColor: '#007987', primaryTextColor: '#14262e',
+    secondaryColor: '#d7ebee', secondaryBorderColor: '#237a87', secondaryTextColor: '#14262e',
+    tertiaryColor: '#f0f3f6', tertiaryBorderColor: '#63838c', tertiaryTextColor: '#14262e',
+    mainBkg: '#e4f4f2', textColor: '#1d3038', lineColor: '#4c7280',
+    nodeTextColor: '#14262e', clusterBkg: '#edf5f3', clusterBorder: '#6d939c',
+    edgeLabelBackground: '#fafcfb',
+    actorBkg: '#e4f4f2', actorBorder: '#007987', actorTextColor: '#14262e',
+    actorLineColor: '#567985', signalColor: '#426c79', signalTextColor: '#1d3038',
+    labelBoxBkgColor: '#deeff1', labelBoxBorderColor: '#007987',
+    labelTextColor: '#14262e', loopTextColor: '#14262e',
+    activationBkgColor: '#cee5ea', activationBorderColor: '#237a87',
+    noteBkgColor: '#fff1ce', noteBorderColor: '#a58b4f', noteTextColor: '#26313a',
+    sequenceNumberColor: '#00556c'
+  }
+};
+
+// In dark mode very pale `rect rgb(...)` bands from authored sequence diagrams
+// would put near-white labels on a near-white region. Adapt only pale bands for
+// rendering; the "View source" panel retains the original, unmodified code.
+function themeAwareSource(source) {
+  if (isLightTheme() || !/^\s*sequenceDiagram\b/im.test(source)) return source;
+  const darkBands = [
+    'rgba(58, 133, 180, .17)',
+    'rgba(124, 102, 162, .15)',
+    'rgba(57, 153, 132, .16)'
+  ];
+  let band = 0;
+  return source.replace(/^(\s*rect\s+)rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/gim,
+    (match, prefix, r, g, b) => {
+      const channels = [Number(r), Number(g), Number(b)];
+      if (channels.some(value => value > 255)) return match;
+      // Restrict to pastel shades; don't reinterpret deliberately vivid colors.
+      if (Math.min(...channels) < 205) return match;
+      return `${prefix}${darkBands[band++ % darkBands.length]}`;
+    }
+  );
+}
+
+function keepTextReadable(node) {
+  const svg = node.querySelector('svg');
+  const intrinsicWidth = svg?.viewBox?.baseVal?.width;
+  if (!intrinsicWidth || !Number.isFinite(intrinsicWidth)) return;
+  // Keep Mermaid's native text size. Large sequence diagrams scroll sideways
+  // rather than shrinking every label to 8px on phones or narrow blog layouts.
+  svg.style.width = `${Math.ceil(intrinsicWidth)}px`;
+  svg.style.maxWidth = 'none';
+  svg.style.height = 'auto';
+  node.tabIndex = 0;
+  node.setAttribute('role', 'region');
+  node.setAttribute('aria-label', 'Mermaid diagram; scroll horizontally if necessary');
+}
+
 let libraryPromise;
 let library;
 let rendering = Promise.resolve();
@@ -84,13 +160,18 @@ async function getLibrary() {
 }
 
 function configure(mermaid) {
+  const palette = isLightTheme() ? palettes.light : palettes.dark;
   mermaid.initialize({
     startOnLoad: false,
     securityLevel: 'strict',
-    theme: currentTheme(),
-    fontFamily: 'Space Grotesk, sans-serif',
-    flowchart: { htmlLabels: false, useMaxWidth: true },
-    sequence: { useMaxWidth: true }
+    theme: 'base',
+    themeVariables: {
+      ...palette,
+      fontFamily: 'Space Grotesk, sans-serif',
+      fontSize: '16px'
+    },
+    flowchart: { htmlLabels: false, useMaxWidth: false },
+    sequence: { useMaxWidth: false }
   });
 }
 
@@ -100,7 +181,7 @@ function render(targets) {
       const mermaid = await getLibrary();
       configure(mermaid);
       for (const node of targets) {
-        node.textContent = sources.get(node);
+        node.textContent = themeAwareSource(sources.get(node));
         node.removeAttribute('data-processed');
       }
       await mermaid.run({ nodes: targets });
@@ -108,6 +189,7 @@ function render(targets) {
         const figure = node.closest('.flk-mermaid');
         figure?.classList.remove('has-error');
         figure?.classList.add('is-rendered');
+        keepTextReadable(node);
         const status = figure?.querySelector('.flk-mermaid__status');
         if (status) status.hidden = true;
       }

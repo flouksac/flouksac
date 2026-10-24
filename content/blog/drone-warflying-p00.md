@@ -509,11 +509,6 @@ sequenceDiagram
     end
 ```
 
-
-
-
-
-
 A typical operation begins before the props start spinning.
 
 The quad first needs a valid configuration, charged batteries and working radio links. The companion computer has to boot independently, initialize its peripherals and c2 agent, then expose enough health information that I know whether the payload is actually usable before launching.
@@ -531,6 +526,7 @@ At that point, the drone has effectively transported a small remotely administer
 
 The companion can then operate using whatever management path is available for the engagement. My current design assumes a remote redirector as part of that architecture, allowing the payload to exchange status, commands and collected results with infrastructure I control without tightly coupling the software to the operator's laptop.
 
+------------------
 
 
 ## 07 // ATT&CK and adversarial simulation- 
@@ -568,6 +564,8 @@ That makes the drone more interesting to me than seeing it only as a flying coll
 The objective of adversarial simulation is ultimately to exercise defenses in a realistic chain of events.
 
 I really thing that a drone gives us one more weird place from which that chain can begin.
+
+------------------
 
 
 ## 08 // Addressing the elephant flying in the room
@@ -657,6 +655,8 @@ Radio regulations create another boundary around what the payload can transmit.
 The 2.4 GHz and 5 GHz Wi-Fi bands are available under general authorization, but they still have technical operating conditions such as permitted power and usage rules. ANFR (Agence nationale des fréquences) also makes it clear that radio jammers are prohibited outside narrowly defined state exemptions and that causing harmful interference through non-compliant radio use can lead to criminal penalties.
 
 Different countries have their own registration, spectrum, import, battery-transport and guidelines, so you should inform yourself before starting anything.
+
+------------------
 
 
 ## 09 // What's next ?
