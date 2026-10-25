@@ -17,7 +17,6 @@ This project is still in its early stages, so this article will probably be upda
 Like me, if you're reading this around the time I'm writing it, \
 you probably use AI every week (or every day) to help with various tasks.
 
-Without trying to kick down doors that are already wide open, \
 I think we all know by now that AI can be both a blessing and a curse.
 
 You can create, build and ship things absurdly faster than before. \
@@ -371,10 +370,9 @@ It depends on transmission power, antenna gain, obstacles, reflections and inter
 
 All that can change what the receiver sees.
 
-Hopefully now you understand that a receiver at ground level, 10 meters and 50 meters is not necessarily exposed to the same obstacles, reflections or interference... \
-Moving vertically can therefore reveal a different RF environment rather than simply a "stronger" one.
+Moving vertically can  reveal a different RF environment rather than simply a "stronger" one.
 
-So the drone feels promising as it could make us able to discover different radio frequencies. 
+So the drone feels promising as it could make us able to discover different radio emitter. 
 
 But to do so in a red team context we will also have to take into account endurance, mobility, max altitude, payload, durability, discretion, cost, complexity, accessibility to the target, setup, legal burden....... 
 
@@ -385,8 +383,6 @@ What the drone uniquely brings is three-dimensional mobility and access to obser
 ------------------
 
 ## 05 // The challenge of choosing the right FPV hardware
-
-At this point, the idea starts sounding almost ready on paper.
 
 I wanted a quad large enough to carry additional electronics, efficient enough to remain useful once those electronics are installed, and open enough so I can share it / modify almost anything if needed. I also want it to be reliable, with the companion computer fault-tolerant enough that an error in a process on the companion computer doesn't also mean losing the mission/the drone.
 
@@ -650,7 +646,7 @@ Different countries have their own registration, spectrum, import, battery-trans
 
 ## 09 // What's next ?
 
-Well, after all these considerations, I think we have a decent idea of what I'm getting myself into.
+I think we have a decent idea of what I'm getting myself into.
 
 As for the rest of this series, here's what I have planned.
 

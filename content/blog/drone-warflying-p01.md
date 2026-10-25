@@ -4,7 +4,7 @@ date: 2026-09-18
 draft: false
 deck: "Second article of the drone series: Anatomy of a Flying Computer"
 image: "images/thumbs/pigeon-goes-brrr.png"
-tags: ["fpv", "warflying", "crafting","wifi"]
+tags: ["fpv", "warflying", "crafting", "wifi"]
 playlists: ["Red Teaming Drone ?"]
 ---
 
@@ -15,29 +15,21 @@ This project is still in its early stages, so this article will probably be upda
 
 ## 00 // Anatomy of a Flying Computer
 
-I spent the previous article explaining why I wanted to put a Linux computer on a drone. \
-There's still one fairly large detail to sort out before buying anything: understanding the thing that's supposed to compose my drone and carry the companion computer.
+I spent the previous article explaining why I wanted to put a Linux computer on a drone. By the time I'm writing this one, the component selection is done, the orders are placed and I've finished modelling the custom mounts in FreeCAD. There is still a rather important item on the TODO list: assembling the bloody thing.
 
-I came into this project knowing considerably more about networks than aeromodelling, my only experience on aerodynamism/crafting aircraft was trough the game "scrap mechanic" where you play a dwarf building bloc by bloc some incredible vehicule, i play hundreds of hours on this game that include boolean logic similar to minecraft's redstone and did some crazy build like planes, helicoptere, autopiloted drones with the mod "wings". 
+Most of my background is in networks and software. My previous experience with aerodynamics and building aircraft came mostly from *Scrap Mechanic*, a game in which I've spent hundreds of hours assembling vehicles block by block, wiring logic circuits and making increasingly questionable flying machines. With the *Wings* mod, I ended up building planes, helicopters and even autopiloted drones. Apparently I enjoyed that enough to try it with real motors, real batteries and a considerably less forgiving and realistic physics engine.
 
-I could explain what I'd want the Orange Pi to do once in the air or landed on top of a building, but if someone had asked me why a quadcopter needs four ESC channels, or what the numbers printed on a motor meant, I would have had to open a browser. Probably several tabs. This article is what I wish I'd had open when I started digging the rabbit hole.
+The first challenge was learning what all the FPV components actually do. I knew why I wanted an Orange Pi onboard, but ESC ratings, motor KV, propeller pitch and flight-controller wiring were completely new territory. I had a lot of browser tabs open during the component selection, and I made this chapter out of the explanations that were useful while working through them.
 
-We'll look at how a quadcopter flies, how its parts work together, and why a small FPV aircraft is quite different from the DJI/parrot  drones most people are familiar with. I'll use a few examples from my seven-inch project, but I'll keep the actual manufacturers, prices and component comparisons for part 02. \
-There will be some physics too, a bit of electricity and enough acronyms to make the cybersecurity crowd (espcially blue team) feel like home.
+I'll cover the physical principles and the parts of a quadcopter, using pieces from my seven-inch build where they help. Part 02 contains the complete shopping list, prices and reasons for choosing each reference. There is also some electricity here, plus enough acronyms to make the blue team feel at home.
 
 ## 01 // How does a quadcopter stay in the air?
 
-Imagine putting four fans at the corners of a carbon-fiber frame, pushing air downwards. \
-When they push enough air down, the resulting force pushes the aircraft upwards. \
-That's the basic idea behind a quadcopter, although getting four motors to cooperate is where things become interesting.
+A quadcopter flies by spinning four propellers that accelerate air downwards. The reaction produces an upward force called **thrust**. In a level hover, the four propellers together produce roughly the same force as the drone's weight. Increase their combined thrust and the aircraft climbs; decrease it and gravity wins.
 
-Gravity pulls the complete drone towards the Earth. The propellers produce **thrust** in the opposite direction. \
-If their combined upward thrust matches the aircraft's weight, the drone can hover. \
-Increase it again and the aircraft accelerates upwards, then decrease it and it starts descending. \
-Those simple descriptions assume the drone is more or less level, which won't always be the case.
+The interesting part is that the four motors do different amounts of work. Their speed changes independently, allowing the drone to tilt and turn without the control surfaces found on a conventional aeroplane.
 
-A quadcopter also needs to control its orientation/angle. Pilots describe its movement around three axes as **roll**, **pitch** and **yaw**. Roll tilts it left or right, pitch tilts the nose up or down, and yaw rotates it left or right while keeping the aircraft broadly level. \
-The throttle controls the total thrust available to perform those 3 movements.
+Pilots describe the aircraft's orientation using three axes. **Roll** tilts it sideways, **pitch** tilts its nose forward or backward, and **yaw** rotates it around its vertical axis. The throttle stick commands collective thrust, while the other stick inputs tell the flight controller how the aircraft should move. The exact response changes with the selected flight mode.
 
 ![Differents angles of control](../../images/yaw_roll_pitch.webp)
 
@@ -48,23 +40,17 @@ The throttle controls the total thrust available to perform those 3 movements.
 | Pitch                        | The nose goes down or up                    | The front and rear produce different amounts of thrust     |
 | Yaw                          | The aircraft turns around its vertical axis | Opposite-rotating motor groups change their torque balance |
 
+Two propellers rotate clockwise (**CW**) and the other two counter-clockwise (**CCW**). Each spinning propeller also produces a reaction torque on the frame. Alternating the rotation directions balances those torques during a hover, while changing the balance between the groups allows yaw control.
 
-The proppelers have alternate directions (cw and ccw for clockwise and counter clockwise). When a motor turns its propeller, it also applies a twisting reaction to the aircraft. Two motors rotate clockwise and two counter-clockwise so those reactions cancel in a hover. Change the balance between the two groups and the quad can yaw. \
-Meanwhile, changing the thrust between front and rear or left and right produces pitch and roll.
+Pitch also explains forward movement. When the drone tilts its nose down, its thrust vector tilts forward with it, so some of that force accelerates the aircraft horizontally. The motors must still provide enough upward force to carry the complete weight. That's the reason a quad can move in any horizontal direction without wings or wheels.
 
-Tilting is also how a quadcopter moves horizontally. Once it pitches forward, part of its thrust points forward instead of straight up, accelerating the aircraft in that direction. It often needs a little more total thrust to keep its altitude while tilted. This also explains why strong wind or aggressive manoeuvres can consume more battery than a gentle hover or cruise.
-
-The **center of mass** matters here. Ideally, it should sit close to the point around which the aircraft is designed to rotate. An oversized battery hanging off the back forces the motors to compensate continuously. \
-The drone will still fly, but the balance affects how much control authority and efficiency it has left. 
-
-Aerodynamics play a part too, especially in forward flight. The frame, battery and payload all create drag. \
-A large box/battery mounted underneath the aircraft might fit in the 3D while making the real machine less pleasant to fly.
+I also had to pay attention to the **centre of gravity** while designing my frame layout. The battery, Orange Pi, external radios and their mounts all contribute to the aircraft's balance. Placing too much weight at one end makes the controller work harder to keep the quad level. The carbon arms, battery and any large printed parts also create aerodynamic drag once the aircraft starts moving forward. It turns out that finding a place where a component *fits* in FreeCAD is only half the design problem.
 
 ## 02 // The control loop
 
-There's a small problem with flying using four independent motors. The aircraft can change orientation very quickly, and by the time the pilot notices the mistake through FPV goggles, it may already be crashed somewhere.
+Four independent motors give a quadcopter its manoeuvrability, but they also make it very easy to flip the aircraft in a fraction of a second. A pilot cannot manually correct each motor several hundred times per second. That's the flight controller's job.
 
-The **flight controller**, usually shortened to **FC**, continuously reads sensors, estimates what the aircraft is doing and adjusts the motors to get closer to what the pilot or autopilot requested. This happens repeatedly and very quickly throughout the flight.
+The **flight controller**, usually shortened to **FC**, continuously reads its motion sensors, compares the measured movement with the requested movement, then changes the four motor outputs. It repeats the process throughout the flight. The sensor measurements coming back after each correction form a **feedback loop**.
 
 ```mermaid
 flowchart LR
@@ -78,7 +64,7 @@ flowchart LR
 
 The **gyroscope** measures angular rotation rates, telling the controller how quickly the quad is rolling, pitching or yawing. The **accelerometer** measures specific force, including the effect of gravity when the aircraft is stationary. By combining these measurements, the controller can estimate its attitude and how that attitude is changing. Other sensors, such as a compass or barometer, help with heading and altitude where the chosen flight mode needs them.
 
-You'll often see **PID** mentioned. It stands for Proportional, Integral and Derivative, three ways of using an error and its history to decide how strongly to correct it. For now, thinking of PID as part of the controller's method for turning a desired motion into motor corrections is enough. Tuning those values deserves its own afternoon of frustration after the drone is assembled.
+You'll see the acronym **PID** often in FPV forums. It stands for Proportional, Integral and Derivative, three components of a feedback controller. The proportional term reacts to the current error, the integral term deals with accumulated error, and the derivative term reacts to how quickly the error changes. Together they help the FC turn stick input into controlled motion rather than four motors fighting each other. We'll get to actual configuration when I cover ArduPilot.
 
 This also explains why I'm keeping a dedicated FC alongside the Orange Pi. A Linux computer is excellent at running scripts, tools, storing files and talking to remote services, but its normal operating system doesn't guarantee the timing expected by a flight-control loop. ArduPilot runs on the flight controller and handles flight-critical decisions. Even tough, there are many project of dyi around esp32 drone, howerver i don't thinks that it could fit well with my needs
 
@@ -96,17 +82,20 @@ The awesome FPV community tends to describe its quadcopters using propeller diam
 | 7-inch           | Larger propellers, efficient cruising when well designed    | More room and a plausible starting point for the companion payload                                            |
 | 8-inch and above | Larger payloads or specialised endurance/carry work         | More lifting options, with additional size and mechanical constraints could fit even better ban can cost more |
 
-There are also different numbers of arms and motors. A tricopter uses three motor positions and generally needs a mechanism to control yaw, a quadcopter has four, a hexacopter six and an octocopter eight. More motors can support different payload and redundancy requirements, but they also bring more parts, weight and cost. I think that four is a good starting point for a project I'm going to assemble and repair myself.
+The words *racing*, *freestyle*, *cinematic* and *long-range* describe what a build is optimised for. A racing quad responds quickly to pilot commands, while a cinematic aircraft focuses on smooth footage. Long-range builds usually emphasise efficient flight, suitable batteries and navigation equipment. That's the family I ended up researching most seriously.
+
+You'll also come across tricopters, hexacopters and octocopters. Those have three, six and eight motor positions respectively. Tricopters commonly use a tilting motor to control yaw; six- and eight-motor layouts distribute propulsion across more units. My build stays with four motors, partly because the standard quadcopter ecosystem covers all the flight hardware I need.
 
 ![Differents type of drone](../../images/type_of_drone.png)
 
-Then there's the distinction between freestyle, racing, cinematic and long-range designs. Racing values responsiveness, cinematic builds often prioritise smooth footage, and long-range designs put more attention into energy use and navigation. I'm interested in the last category because I want to lift a computer rather than practise split-S manoeuvres around abandoned buildings.
 
 ## 04 // Frame
 
 The **frame** is the part that makes all those components an aircraft instead of a pile of electronics on my kitchen counter that any girlfriend could find irritating. It holds the motors, protects the internal stack and provides mounting points for the battery, camera and everything else I decide to attach with 3D printed pieces.
 
-Carbon fiber is common in FPV frames because it offers high stiffness for relatively low weight (but i've been surprised that it's not that light for the frame i've chosen). That stiffness matters because a frame that twists too much changes how the motors and flight controller behave together. FIY, Carbon is electrically conductive, though, so exposed edges, damaged insulation and metal hardware deserve some attention when wiring the build.
+Carbon fiber is common in FPV frames because it offers high stiffness for relatively low weight (I was still surprised by how much the particular seven-inch frame I'd chosen weighed). That stiffness matters because a frame that twists too much changes how the motors and flight controller behave together. 
+
+One less glamorous fact about carbon fibre is that **it conducts electricity**. A damaged wire pressed against a sharp carbon edge can create a short. Cable routing, insulation and the length of mounting screws belong in the design long before the first power-up.
 
 Frames come in several geometries. In a **true X**, the motors sit at the corners of a fairly symmetrical X. A **deadcat** layout moves the front arms outward or changes their angles so the propellers are less likely to appear in the FPV camera's field of view. There are also stretched X and other layouts built around particular flight characteristics or vibration limitation.
 
@@ -115,17 +104,15 @@ Frames come in several geometries. In a **true X**, the motors sit at the corner
 
 ## 05 // Motors
 
-Most FPV quadcopters use **brushless motors**. Inside each motor, stationary copper windings form the *stator*, while a rotating bell carries magnets. Electronics energise those windings in sequence and pull the rotating part around. Brushless designs handle the repeated acceleration and deceleration needed for flight well, without the mechanical brushes found in some simpler motors.
+FPV quads generally use **brushless motors**. Inside a motor, copper windings form the stationary **stator**, while permanent magnets sit inside the rotating bell. The ESC energises the windings in sequence, causing the bell and its propeller to spin. This electronic control allows rapid speed changes with very little mechanical complexity.
 
-Motor listings look cryptic at first, but the main numbers are fairly readable. Take **2807 1300KV**, for example. The `28` refers to a stator diameter of approximately 28 mm, and `07` to a stator height of 7 mm. Those dimensions describe the internal stator, so the complete motor is larger. Different manufacturers may add suffixes or use slightly different naming conventions.
+The numbers printed on motor listings were one of the first things I had to decode. Take my **EMAX ECO II 2807 1300KV** motors. In the common FPV naming convention, **28** means a stator diameter of 28 mm and **07** means a stator height of 7 mm. Those are the dimensions of the stator inside the motor, so the complete motor is physically larger.
 
-The `1300KV` part means the motor's approximate **no-load speed constant**, expressed in revolutions per minute per volt. A 1300KV motor supplied with 22.2 V has a theoretical no-load speed in the range of 28,900 RPM. A real propeller adds load, so actual speed depends on the motor, voltage, ESC command and propeller.
+**1300KV** describes the approximate no-load speed constant, in revolutions per minute per volt. With a 6S LiPo's nominal 22.2 V, the arithmetic is straightforward: `1300 × 22.2 = 28,860 RPM`. That's a theoretical speed without a propeller attached. Once the motor has to turn seven inches of plastic through the air, the load and current rise and the actual RPM changes.
 
-The motor needs enough torque to turn its propeller under load. Torque is the twisting force available at the shaft, and the current flowing through the motor helps produce it. Larger stators can often handle larger propeller loads. 
+The motor also produces **torque**, the twisting force used to turn the propeller. Larger stator dimensions give the motor room for more magnetic material and copper, which helps it handle larger propeller loads. Current, heat and efficiency tell us how hard it is working.
 
-Manufacturer **thrust tables** are useful too. They may report the thrust, current and power measured with a specific propeller at a given voltage and throttle setting. \
-
-Heat matters too. Some electrical energy turns into heat inside the windings and ESCs. Overloading a motor or giving it poor airflow can make that a real problem.
+Manufacturers often provide a **thrust table** for a motor. Look for the propeller tested, supply voltage, current draw and measured thrust. A row showing a motor producing a particular force at a particular current is useful for comparing setups. It describes that exact motor/propeller test, which is the data I used when sizing the seven-inch build.
 
 ![Drone motor schema](../../images/drone-motor.jpg)
 
@@ -157,22 +144,23 @@ There's one more mini board in my component pile worth introducing here. Power-f
 
 If I had to choose one component to understand properly before wiring the drone, it would be the **flight controller**. It's a small circuit board, but it's the core module of a drone. It keeps the quad stable, interpret the pilot's commands, read sensors, drive the motors.
 
-At the centre is a **microcontroller** (MCU). Unlike a general-purpose Linux computer, it runs firmware built for tightly timed work. Many modern FPV FCs use STM32 microcontrollers. You'll often see families such as F4, F7 or H7 in product names. The family gives clues about processing resources and peripheral support, though the exact board layout matters at least as much as the chip.
+At the centre is a **microcontroller unit** (MCU). Unlike a general-purpose Linux computer, it runs firmware built for tightly timed work. Many modern FPV FCs use STM32 microcontrollers. You'll often see families such as F4, F7 or H7 in product names. The family gives clues about processing resources and peripheral support, though the exact board layout matters at least as much as the chip.
 
 The FC also carries an **IMU** (Inertial Measurement Unit), generally combining gyroscopes and accelerometers. Some boards have two IMUs for redundancy or sensor comparison. A **barometer**, when present, measures atmospheric pressure to help estimate changes in altitude. You'll also find regulators, memory, connectors and sometimes an OSD circuit for displaying flight information over analogue video.
 
 
-| Part of the FC    | What it does ?     |
-|---|---|
-| **UART** | Serial communication with devices such as the RC receiver, GNSS module or Orange Pi |
-| **SPI** | Faster synchronous connection commonly used by onboard sensors or memory |
-| **OSD** | Places flight information on the FPV video feed, when supported by the hardware and video system |
+| Part of the FC             | What it does ?                                                                                                   |
+| ----------------------------| ------------------------------------------------------------------------------------------------------------------|
+| **UART**                   | Serial communication with devices such as the RC receiver, GNSS module or Orange Pi                              |
+| **I²C**                    | A two-wire bus commonly used by external sensors, including some compasses                                       |
+| **SPI**                    | Faster synchronous connection commonly used by onboard sensors or memory                                         |
+| **OSD**                    | Places flight information on the FPV video feed, when supported by the hardware and video system                 |
 | **Blackbox / flight logs** | Records information used to diagnose flight behaviour; exact storage and log features vary by firmware and board |
-| **Power rails / BECs** | Provide regulated voltages for the FC or connected peripherals, within their ratings |
+| **5 V / 9 V rails, BECs**  | Regulated electrical supplies for the FC and                                                                     |
 
-Think of a UART as a conversation between two electronic devices over a pair of signal lines. SPI is an other ways of connecting peripherals with different wiring and communication rules. 
+A UART is especially important for my project. It has a transmit line (**TX**) and a receive line (**RX**). Devices exchange serial data by connecting the relevant TX and RX lines and sharing a compatible signal reference. The Orange Pi and flight controller will use this link to exchange **MAVLink** messages, including position, flight state and battery telemetry.
 
-Now comes the firmware. **Betaflight** is widely used for FPV racing and freestyle, where responsive manual flight is a major priority. **INAV** offers navigation-oriented features alongside FPV support. **ArduPilot** has an extensive autopilot and mission system, logging, configurable failsafes and support for external computers through **MAVLink**. 
+There are several popular firmware choices. **Betaflight** dominates a lot of racing and freestyle builds. **INAV** adds navigation features familiar to FPV pilots. **ArduPilot** provides an extensive set of flight modes, navigation functions, mission tools, logs and interfaces for companion computers. I selected ArduPilot because this drone needs GNSS-based flight capabilities and direct communication with the Orange Pi. A system designed around a Linux payload benefits from those interfaces.
 
 MAVLink is a messaging protocol that lets compatible systems exchange information such as position, attitude, battery status and commands. It isn't a flight controller firmware or a radio link by itself. In my case, the plan is for ArduPilot to run on the FC while the Orange Pi reads flight information such as GPS and manages its own software. 
 
@@ -189,6 +177,8 @@ I'm guilty of calling the little module on top of a drone a “GPS” even when 
 Those measurements help the autopilot answer different questions. GNSS tells it where the aircraft is moving over the ground. The compass helps tell it which way the nose points. They can sit inside the same physical module while remaining separate sensors with different responsability.
 
 This is why GPS/compass placement gets  attention on custom builds. High-current wires and motors generate magnetic fields that can disturb a compass. Builders often mount these modules on a little rear support or mast to give them some distance from the noisy components underneath.
+
+
 ## 10 // RC link
 
 The **radio-control link** is how we tell the aircraft what to do. A handheld **transmitter** sends control information to a **receiver** mounted on the quad, which passes those commands to the flight controller. This is separate from the FPV video feed and separate again from whatever Wi-Fi or network connection the Orange Pi uses.
@@ -198,6 +188,8 @@ A good RC system needs low enough latency for control and a reliable link. The *
 I'll use **ExpressLRS**, an open-source radio-control ecosystem on 2.4 GHz. It supports telemetry and a range of receiver configurations. For link health, measurements such as **LQ** (Link Quality), RSSI and SNR are more informative together than a simplistic “signal bars” icon. The [ExpressLRS FAQ](https://www.expresslrs.org/faq/) explains well which values describe the uplink and downlink.
 
 Some receivers use **antenna diversity**, where they can compare or select reception through multiple antennas. A true-diversity receiver can have separate receiver chains, depending on the model. This can help when one antenna is poorly oriented or partly blocked, but mounting both antennas in the same bad location rather defeats the purpose. Their angle, separation and distance from frame deserve some care.
+
+
 ## 11 // FPV video system
 
 The FPV system is what lets the pilot see through the aircraft's camera. 
@@ -217,58 +209,45 @@ There are two broad families worth distinguishing. **Analogue FPV** often has in
 Antennas matter here just as much as they did in the previous article's discussion of Wi-Fi. FPV systems may use linear or circular polarisation. Circularly polarised antennas are commonly labelled **RHCP** or **LHCP**, and transmitter and receiver antennas should have matching polarisation for a normal link. The antenna connector also has to match the VTX hardware.
 
 The video transmitter needs power and somewhere to lose heat. Some units become very hot on the bench without airflow other have metal Heatsink. 
+
+
 ## 12 // Battery
 
-The battery decides how long the aircraft can fly, how much current the motors can draw and how much extra mass they have to carry. It also happens to be one of the parts that can be dangerous so it's important to treat it with care as it can burst into fire.
+The battery has two jobs in this design. It supplies the current demanded by four motors, and it carries enough energy to give the aircraft useful flight time. Every extra gram of battery also has to be lifted, which made selecting a pack much more interesting than picking the one with the biggest mAh number.
 
-A quick electricity refresher will make the labels less mysterious. **Voltage (V)** describes electrical potential. **Current (A)** describes the rate of charge flow. **Power (W)** is how quickly electrical energy is transferred, and in a simple DC calculation it equals voltage multiplied by current. **Energy (Wh)** tells us how much work a battery can supply over time. Capacity in **amp-hours (Ah)** is useful too, but it only makes sense alongside the battery voltage when comparing stored energy.
+Here's the electricity needed to read a battery listing. **Voltage (V)** describes electrical potential, **current (A)** describes charge flowing through a circuit, **power (W)** is voltage multiplied by current, and **energy (Wh)** is power accumulated over time. A device using 10 W for one hour consumes 10 Wh. A battery's mAh rating describes charge capacity; voltage lets us turn that number into an approximate energy figure.
 
-A battery marked **6S** has six cells or cell groups connected in **series**, so their voltages add. A **6S LiPo** is commonly labelled 22.2 V nominal and reaches 25.2 V when fully charged at 4.2 V per cell. Some Li-ion cells use a nominal rating of 3.6 V instead of 3.7 V, which is why you might also see a six-cell pack advertised as 21.6 V nominal. The supported charge voltage must always come from the actual cell specification.
+A **6S** pack connects six cell groups in **series**, adding their voltages. Lithium cells commonly used for FPV packs reach 4.2 V per cell when fully charged, giving **25.2 V** across a full six-cell series pack. At 3.7 V nominal per cell, the pack is advertised as **22.2 V nominal**. Some cylindrical Li-ion cells have a 3.6 V nominal rating, making the corresponding pack **21.6 V nominal**.
 
-The **P** in a designation such as **6S2P** means two cells in parallel per series group. Parallel cells increase the pack's capacity at the same nominal voltage and can increase available current when the cells and construction allow it. A 6S2P pack therefore contains twelve individual cells.
+The letter **P** describes parallel cells inside each series group. A **6S2P** pack has two cells in parallel in each of its six groups, for a total of twelve cells. Parallel connections increase capacity at the same pack voltage. A six-series pack rated **5,000 mAh** stores roughly **111 Wh** when calculated using 22.2 V nominal (`22.2 × 5 = 111`). That example is about electrical energy; the actual flight duration comes from how much power the aircraft draws.
 
-Here is a simple energy example. A 6S LiPo rated at **5,000 mAh** has 5 Ah of capacity. Using 22.2 V nominal gives approximately **111 Wh**. 
+The **C rating** describes a claimed discharge rate relative to capacity. A 5 Ah pack marked 20C continuous claims `5 × 20 = 100 A` continuous discharge. Current delivery matters because motors can demand large bursts of power during acceleration, even if the aircraft spends most of its time cruising.
 
-The other number you'll see is the **C rating**. It describes a claimed discharge rate relative to capacity. A 5 Ah pack labelled 20C would claim 100 A of continuous discharge capability if the rating is specified as continuous. 
+**LiPo** packs are widespread in performance FPV because they deliver high currents. **Li-ion** packs made from cylindrical cells are attractive for long-range cruising because of their energy density. I designed this quad around slower, efficient flight, so Li-ion was the chemistry I concentrated on during battery selection. 
 
-For this project, I'm comparing two common lithium chemistries. **LiPo** packs are popular in performance FPV because suitable packs can deliver high currents. **Li-ion** cylindrical-cell packs can offer good energy per unit of mass for efficient cruising, but many cells have lower discharge-current capability. As i prefere slow fly without acrobatics and more cruise like, i would prefere li-ion over lipo.
-
-I'll use a good charger, follow the manufacturer's advices, buy brand news batteries. Damaged or swollen lithium packs are **a serious fire risk**. ArduPilot also supports battery monitoring and configurable low/critical battery responses which only work when the monitoring hardware and parameters are set up correctly. Its [battery failsafe documentation](https://ardupilot.org/copter/docs/failsafe-battery.html) is worth keeping nearby to not crash this expensive project.
+Lithium batteries also deserve proper handling. A damaged pack can catch fire; I use a charger suited to the chemistry, check the pack before charging and keep the charging area suitable for lithium batteries. Flight-controller battery monitoring is part of the aircraft setup, so low-voltage warnings and failsafe behaviour can be configured from actual pack data. ArduPilot documents its [battery monitoring and failsafe settings](https://ardupilot.org/copter/docs/failsafe-battery.html).
 
 ## 13 // Thrust-to-weight ratio
 
-The aircraft's **all-up weight** (AUW) includes the frame, motors, electronics, props, battery and payload, ready for flight. The motors and propellers have to produce enough combined thrust to support that complete mass, with some reserve for steering, wind and climbing.
+The **all-up weight** (AUW) is the mass of the aircraft ready to fly, including the battery and every part of the companion payload. The combined thrust from the motors needs to lift that mass and leave enough reserve for turning, climbing and dealing with wind.
 
-You'll often see builders express this as a **thrust-to-weight ratio**. It compares maximum available thrust with the aircraft's weight. For a quick estimate, thrust is often quoted in gram-force or kilogram-force and compared numerically with the aircraft's mass in grams or kilograms under ordinary gravity.
+A quick way to describe the margin is the **thrust-to-weight ratio**. For example, suppose a fully equipped quad weighs **2 kg** and each of its four motors can produce **1 kgf** of thrust with the chosen propeller.
 
-| Example for illustration  | Value |
+| Example only | Value |
 |---|---:|
-| All-up mass | 2.0 kg |
-| Measured maximum thrust per motor | 1.0 kgf |
-| Four-motor maximum thrust | 4.0 kgf |
+| All-up mass | 2 kg |
+| Maximum thrust per motor | 1 kgf |
+| Total maximum thrust | 4 kgf |
 | Thrust-to-weight ratio | 2:1 |
-| Approximate thrust required per motor in level hover | 0.5 kgf |
+| Thrust needed per motor in level hover | ~0.5 kgf |
 
-At 1:1, the aircraft would have essentially no useful reserve at the conditions used for that maximum-thrust figure. A higher ratio leaves more room to control the quad, although the ideal amount depends on the mission. 
-
-It also doesn't mean a 2:1 drone hovers at exactly 50% throttle. The relationship between throttle command, motor speed and thrust isn't linear, and the controller has other things to compensate for.
+The 2:1 ratio means the quad has about twice its weight available in maximum static thrust. A 1:1 setup would already need its full thrust just to hover, leaving no margin for control. This is why I used actual motor-and-propeller thrust data during the component selection rather than looking at KV alone.
 
 ## 14 // The mass/endurance feedback loop
 
-The companion computer makes this whole design a little annoying in a very predictable way. The Orange Pi has mass. Its battery, Wi-Fi adapter, antennas, printed supports and cables have mass too. Every gram needs lifting, and lifting needs energy.
+The Orange Pi itself is small, but its regulator, external Wi-Fi hardware, antennas, connectors and 3D-printed mounts all add weight. Motors must work harder to carry it, and a larger battery brings its own extra mass. I could make the payload lighter or add more battery, but both choices affect the final layout.
 
-```mermaid
-flowchart LR
-    Payload["More payload mass"] --> Thrust["More thrust needed"]
-    Thrust --> Power["Higher power demand"]
-    Power --> Battery["Pressure to add battery capacity"]
-    Battery --> Mass["Higher total aircraft mass"]
-    Mass --> Thrust
-```
-
-A larger battery may give the aircraft more stored energy but it also increases the mass carried throughout the flight. Eventually the added battery weight gives diminishing returns. 
-
-That's why I'm planning to weigh separatly drone and payload so i keep the power requirements of the companion computer separate from the propulsion figures. 
+That's why I worked on the battery position and component mounts in CAD before assembly, and why I tried to keep mass as low as possible while choosing parts.
 
 ## 15 // Putting the pieces together
 
