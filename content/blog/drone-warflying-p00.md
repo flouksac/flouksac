@@ -425,8 +425,6 @@ In Ukraine alone, production moved into the millions of units per year, while en
 
 Research published by RUSI describes this evolution as increasingly modular and component-driven, while also highlighting the enormous dependence of modern FPV supply chains on Chinese motors, batteries, electronics and raw materials. [source](https://www.rusi.org/explore-our-research/publications/commentary/drones-win-battles-components-win-wars)
 
-There is an interesting engineering lesson in that evolution which is relevant well beyond military use.
-
 Small FPV systems can be cheap enough to iterate rapidly, simple enough to repair locally and modular enough that a flight controller, radio link, motor or payload can be replaced without redesigning the entire aircraft. \
 
 Ukraine's drone industry scaled this approach very aggressively; they report production in the order of millions of drones between 2024 and 2026. [source](https://www.csis.org/analysis/understanding-military-ai-ecosystem-ukraine)
@@ -507,7 +505,7 @@ sequenceDiagram
     end
 ```
 
-A typical operation begins before the props start spinning.
+An operation begins before the props start spinning.
 
 The quad first needs a valid configuration, charged batteries and working radio links. The companion computer has to boot independently, initialize its peripherals and C2 agent, then expose enough health information that I know whether the payload is actually usable before launching.
 
@@ -614,8 +612,6 @@ The American framework uses different terminology.
 Professional and many non-recreational small-UAS operations generally fall under **FAA Part 107**. The FAA requires Part 107 aircraft to be registered and the remote pilot to meet certification requirements. Standard Part 107 operations keep the aircraft within visual line of sight, and the usual altitude ceiling is 120m / 400 ft above ground level, with specific provisions around structures and controlled airspace. Operations outside some of those constraints can require a waiver.
 
 Remote ID also matters. The FAA requires most drones that are required to be registered to comply with Remote ID requirements, either through built-in Standard Remote ID, an appropriate broadcast module, or operation within an FAA-Recognized Identification Area when the relevant conditions are met.
-
-The practical lesson is the same as in Europe.
 
 The scenario has to be designed around the local aviation framework rather than taking a technically possible flight path and checking legality afterward.
 
