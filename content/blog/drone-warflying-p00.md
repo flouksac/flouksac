@@ -651,7 +651,7 @@ I think we have a decent idea of what I'm getting myself into.
 As for the rest of this series, here's what I have planned.
 
 - Part 01 : Anatomy of a Flying Computer. \
-  Understanding what quadcopters are made of and what every component actually does before selecting the hardware.
+  Understanding what quadcopters are made of and what every component actually does before presenting my hardware haul.
 - Part 02 : Engineering the Build. \
   Comparing components, anticipating requirements, explaining my component choices and putting together the complete bill of materials (spoiler: it's expensive).
 - Part 03 : ArduPilot on the FC. \
